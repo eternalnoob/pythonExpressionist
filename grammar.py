@@ -57,7 +57,7 @@ class NonterminalSymbol(object):
 
         return ret_list
 
-    def full_monte(self):
+    def full_monte(self, samplesscalar=1):
         """
         This returns the flattened monte_carlo_expand for this nonterminal.
         due to the recursive nature of it, monte_carlo_expand returns a list whose size is
@@ -65,7 +65,7 @@ class NonterminalSymbol(object):
         """
 
         #flatten the result of monte carlo expansion
-        return list(itertools.chain.from_iterable(self.monte_carlo_expand()))
+        return list(itertools.chain.from_iterable(self.monte_carlo_expand(samplesscalar)))
 
 
 
@@ -131,6 +131,9 @@ class TerminalSymbol(object):
         return self.representation
 
     def monte_carlo_expand(self):
+        """
+        this is not a nonterminal, so the monte carlo_expand is the same as the normal expand
+        """
         return self.expand()
 
     def __str__(self):
@@ -173,7 +176,6 @@ class Rule(object):
         :param derivation: Derivation of the NonterminalSymbol
         :type derivation: list()
         :param application_rate: application_rate(probability) for this rule
-        :type application_rate: int
         """
         self.symbol = symbol # NonterminalSymbol that is lhs of rule
         self.derivation = derivation  # An ordered list of nonterminal and terminal symbols
@@ -205,7 +207,6 @@ class Rule(object):
                 for sample in symbol.monte_carlo_expand():
                     symbol_arr.append(sample)
             else:
-                #other wise append the 
                 symbol_arr.append(symbol.monte_carlo_expand())
 
             ret_list.append(symbol_arr)
@@ -308,7 +309,7 @@ class PCFG(object):
         """remove a rule from a nonterminal"""
         self.nonterminal(nonterminal).remove_rule(derivation)
 
-    def expand(self, nonterminal, nTimes=1):
+    def expand(self, nonterminal):
         """expand a given nonterminal"""
         return self.nonterminal(nonterminal).expand()
 
@@ -326,9 +327,19 @@ class PCFG(object):
                 rule.modify_application_rate(application_rate)
                 self.nonterminal(nonterminal)._fit_probability_distribution()
 
-    def monte_carlo_expand(self, nonterminal, samplesScalar = 2):
-        return self.nonterminal(nonterminal).monte_carlo_expand(samplesScalar=2)
+    def monte_carlo_expand(self, nonterminal, samplesscalar=1):
+        """
+        performs monte_carlo_expand on a given nonterminal
+        returns a list of size len(nonterminal.rules)*samplesscalar
+        """
+        return self.nonterminal(nonterminal).monte_carlo_expand(samplesscalar)
+
 
     def full_monte(self, nonterminal):
+        """
+        returns the flattened monte_carlo_expand for a nonterminal
+        returns on list, size depends on the number of productions for each nonterminal and number
+        of nonterminals expanded
+        """
         return self.nonterminal(nonterminal).full_monte()
 
