@@ -4,6 +4,10 @@ generating grammars as opposed to parsing them
 """
 import random
 import re
+import itertools
+
+
+
 
 class NonterminalSymbol(object):
     """A non-terminal symbol in a grammar."""
@@ -35,6 +39,35 @@ class NonterminalSymbol(object):
         """Expand this nonterminal symbol by probabilistically choosing a production rule."""
         selected_rule = self._pick_a_production_rule()
         return selected_rule.derive()
+
+    def monte_carlo_expand(self, samplesscalar=1):
+        """
+        probabilistically expand our nonterminal
+        samplesScalar*n times, where n is the number of productions rules
+        at our particular level
+        returns an array containing the n samples of the productions for self
+        """
+        #expand n times
+        ret_list = []
+        times = len(self.rules)*samplesscalar
+
+        for _ in range(times):
+            selected_rule = self._pick_a_production_rule()
+            ret_list.append(selected_rule.mcm_derive())
+
+        return ret_list
+
+    def full_monte(self):
+        """
+        This returns the flattened monte_carlo_expand for this nonterminal.
+        due to the recursive nature of it, monte_carlo_expand returns a list whose size is
+        len(self.rules)*samplesScalar, to represent each initial sample of our initial Nonterminal
+        """
+
+        #flatten the result of monte carlo expansion
+        return list(itertools.chain.from_iterable(self.monte_carlo_expand()))
+
+
 
     def _pick_a_production_rule(self):
         """Probabilistically select a production rule."""
@@ -90,13 +123,18 @@ class TerminalSymbol(object):
         :type representation: string
         """
         self.representation = representation
+    def __eq__(self, other):
+        return self.representation == other.representation
 
     def expand(self):
         """Return this terminal symbol."""
         return self.representation
 
+    def monte_carlo_expand(self):
+        return self.expand()
+
     def __str__(self):
-        return "\"" + self.representation.__str__() + "\""
+        return self.representation.__str__()
 
     def __repr__(self):
         return self.__str__()
@@ -116,6 +154,13 @@ class SystemVar(TerminalSymbol):
 
     def __repr__(self):
         return self.__str__()
+
+    def expand(self):
+        """Return this terminal symbol."""
+        return self.__str__()
+
+    def monte_carlo_expand(self):
+        return self.expand()
 
 
 class Rule(object):
@@ -140,13 +185,46 @@ class Rule(object):
 
     def modify_application_rate(self, application_rate):
         """
-        change the application rate for a given Rule
+        change the application rate for this rule
         """
         self.application_rate = application_rate
 
     def derive(self):
         """Carry out the derivation specified for this rule."""
         return ''.join(symbol.expand() for symbol in self.derivation)
+
+    def mcm_derive(self):
+        """carry out montecarlo derivation for this rule"""
+        ret_list = []
+        #for each value in derivation side of the rule
+        for symbol in self.derivation:
+            symbol_arr = []
+            #if the symbol is a nonterminal, monte_carlo_expand returns an array
+            if isinstance(symbol, NonterminalSymbol):
+                #List containing the mcm expansions for a given symbol
+                for sample in symbol.monte_carlo_expand():
+                    symbol_arr.append(sample)
+            else:
+                #other wise append the 
+                symbol_arr.append(symbol.monte_carlo_expand())
+
+            ret_list.append(symbol_arr)
+
+        #ret list should be a list of lists
+        #either TerminalSymbols or Nonterminals Symbols
+        #take this and construct a list of TerminalSymbols and singleNonterminalSymbols
+        #this means represent each possible combination of NonterminalSymbols
+
+        #ret list contains the cartesian product of its subsets, representing all possible
+        #combinations of nonterminal choices to be made
+        ret_list = itertools.product(*ret_list)
+
+        joined = []
+        for productions in ret_list:
+            joined.append(''.join(itertools.chain.from_iterable(list(productions))))
+
+
+        return joined
 
     def __str__(self):
         return self.symbol.__str__()+ ' -> ' + self.derivation.__str__()
@@ -166,19 +244,19 @@ def parse_rule(rule_string):
     split_list = re.split('(\[\[[^\[{2}]+\]\]|\[[^\]]+])', rule_string)
     #remove all empty strings
     split_list = filter(None, split_list)
-    #
-    rhs = []
+
+    derivation = []
     for token in split_list:
         brackets = token.count("[")
         stripped = token.lstrip("[").rstrip("]")
 
         if brackets == 2:
-            rhs.append(NonterminalSymbol(stripped))
+            derivation.append(NonterminalSymbol(stripped))
         elif brackets == 1:
-            rhs.append(SystemVar(stripped))
+            derivation.append(SystemVar(stripped))
         else:
-            rhs.append(TerminalSymbol(stripped))
-    return rhs
+            derivation.append(TerminalSymbol(stripped))
+    return derivation
 
 class PCFG(object):
     """
@@ -189,24 +267,48 @@ class PCFG(object):
 
     def __init__(self):
         self.nonterminals = []
+        self.system_vars = []
 
     def add_nonterminal(self, nonterminal):
         """ add a nonterminal to our grammar"""
         if nonterminal not in self.nonterminals:
             self.nonterminals.append(nonterminal)
 
+
     def add_rule(self, nonterminal, derivation, application_rate=1):
-        """add a rule to a nonterminal"""
+        """
+        add a rule to a nonterminal
+        recursion makes this a paaaain
+        problems arise with associating nonterminals that have the same tag with their correct
+        nonterminal representation within the PCFG class nonterminals[] list
+        so we have to do this manually with each token in derivation
+        or else we end up with nonterminals that have the same tag but do not have the same
+        productions associated with them
+        """
+        nonterm_add = self.nonterminal(nonterminal)
+        new_derivation = []
         for token in derivation:
-            if isinstance(token, NonterminalSymbol) and token not in self.nonterminals:
-                self.nonterminals.append(token)
-        self.nonterminal(nonterminal).add_rule(derivation, application_rate)
+            if isinstance(token, NonterminalSymbol):
+                if any(token.tag == nt.tag for nt in self.nonterminals):
+                    new_derivation.append(self.nonterminal(token))
+                else:
+                    self.add_nonterminal(token)
+                    new_derivation.append(token)
+            elif isinstance(token, SystemVar) and token not in self.system_vars:
+                self.system_vars.append(token)
+                new_derivation.append(token)
+            else:
+                new_derivation.append(token)
+
+        nonterm_add.add_rule(new_derivation, application_rate)
+
+
 
     def remove_rule(self, nonterminal, derivation):
         """remove a rule from a nonterminal"""
         self.nonterminal(nonterminal).remove_rule(derivation)
 
-    def expand(self, nonterminal):
+    def expand(self, nonterminal, nTimes=1):
         """expand a given nonterminal"""
         return self.nonterminal(nonterminal).expand()
 
@@ -224,15 +326,9 @@ class PCFG(object):
                 rule.modify_application_rate(application_rate)
                 self.nonterminal(nonterminal)._fit_probability_distribution()
 
+    def monte_carlo_expand(self, nonterminal, samplesScalar = 2):
+        return self.nonterminal(nonterminal).monte_carlo_expand(samplesScalar=2)
 
-
-
-
-
-
-
-
-
-
-
+    def full_monte(self, nonterminal):
+        return self.nonterminal(nonterminal).full_monte()
 

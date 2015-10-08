@@ -1,6 +1,6 @@
 """import unittest for running tests"""
 import unittest
-from grammar import NonterminalSymbol, Rule, parse_rule, PCFG, TerminalSymbol
+from grammar import NonterminalSymbol, Rule, parse_rule, PCFG, SystemVar
 
 class TestNonterminalEquivalency(unittest.TestCase):
     """
@@ -150,11 +150,23 @@ class TestPcfgOperations(unittest.TestCase):
         self.assertNotEqual(old_app, new_app)
         self.assertEqual(new_app, 5)
 
-
-
-
-
-
+    def test_returns_system_vars(self):
+        """
+        test that our function correctly returns the list of system variables
+        defined by the user within the program
+        """
+        self.test_gram.add_nonterminal(self.nonterminal)
+        system_var_prod = parse_rule("[[affimative]], [name], [[I think]] his hair is[hair_color]")
+        self.test_gram.add_rule(self.nonterminal, system_var_prod)
+        self.assertEqual(2, len(self.test_gram.system_vars))
+        system_var_prod_2 = parse_rule("Ah yes, [player_name]")
+        self.test_gram.add_rule(system_var_prod[0], system_var_prod_2)
+        self.assertEqual(3, len(self.test_gram.system_vars))
+        test_system_vars = []
+        test_system_vars.append(SystemVar("name"))
+        test_system_vars.append(SystemVar("hair_color"))
+        test_system_vars.append(SystemVar("player_name"))
+        self.assertEqual(test_system_vars, self.test_gram.system_vars)
 
 if __name__ == '__main__':
     unittest.main()
