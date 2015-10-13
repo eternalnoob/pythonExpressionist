@@ -6,9 +6,6 @@ import random
 import re
 import itertools
 
-
-
-
 class NonterminalSymbol(object):
     """A non-terminal symbol in a grammar."""
 
@@ -48,12 +45,22 @@ class NonterminalSymbol(object):
         returns an array containing the n samples of the productions for self
         """
         #expand n times
+        rule_choices = []
         ret_list = []
         times = len(self.rules)*samplesscalar
 
         for _ in range(times):
             selected_rule = self._pick_a_production_rule()
-            ret_list.append(selected_rule.mcm_derive())
+            rule_choices.append(selected_rule)
+
+        #ensure each possible production occurs at least once
+
+        for rule in self.rules:
+            if rule not in rule_choices:
+                rule_choices.append(rule)
+
+        for rule in rule_choices:
+            ret_list.append(rule.mcm_derive(samplesscalar))
 
         return ret_list
 
@@ -195,7 +202,7 @@ class Rule(object):
         """Carry out the derivation specified for this rule."""
         return ''.join(symbol.expand() for symbol in self.derivation)
 
-    def mcm_derive(self):
+    def mcm_derive(self, samplesscalar):
         """carry out montecarlo derivation for this rule"""
         ret_list = []
         #for each value in derivation side of the rule
@@ -204,7 +211,7 @@ class Rule(object):
             #if the symbol is a nonterminal, monte_carlo_expand returns an array
             if isinstance(symbol, NonterminalSymbol):
                 #List containing the mcm expansions for a given symbol
-                for sample in symbol.monte_carlo_expand():
+                for sample in symbol.monte_carlo_expand(samplesscalar):
                     symbol_arr.append(sample)
             else:
                 symbol_arr.append(symbol.monte_carlo_expand())
@@ -335,11 +342,11 @@ class PCFG(object):
         return self.nonterminal(nonterminal).monte_carlo_expand(samplesscalar)
 
 
-    def full_monte(self, nonterminal):
+    def full_monte(self, nonterminal, samplesscalar=1):
         """
         returns the flattened monte_carlo_expand for a nonterminal
         returns on list, size depends on the number of productions for each nonterminal and number
         of nonterminals expanded
         """
-        return self.nonterminal(nonterminal).full_monte()
+        return self.nonterminal(nonterminal).full_monte(samplesscalar)
 
