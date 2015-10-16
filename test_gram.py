@@ -1,4 +1,4 @@
-from grammar import NonterminalSymbol, parse_rule, TerminalSymbol, PCFG
+from grammar import NonterminalSymbol, parse_rule, TerminalSymbol, PCFG, MarkupSet, Markup
 test = PCFG()
 
 ask_day = NonterminalSymbol('ask_day')
@@ -17,7 +17,7 @@ pleasantry_prod3 = parse_rule("Can you believe what happened on the [news.channe
 
 rude_prod1 = parse_rule("As ugly as ever, I see!")
 rude_prod2 = parse_rule("Time has been as unkind to you as it has to [world.celebrity]!")
-rude_prod3 = parse_rule("You remain as despicable as ever, I see")
+rude_prod3 = parse_rule("You remain as despicable as ever, it would seem.")
 
 greetings_prod1 = parse_rule("Hey, long time no see, [subject.name].")
 greetings_prod2 = parse_rule("Is that you, [subject.name]?")
@@ -48,6 +48,21 @@ test.add_rule(rude, rude_prod3, 7)
 test.add_rule(ask, ask_prod1, 5)
 test.add_rule(ask, ask_prod2, 10)
 test.add_rule(ask, ask_prod3, 8)
+
+SPEECH_ACT = MarkupSet("speech_act")
+TONE = MarkupSet("tone")
+
+ask_day_markup = Markup("THISISATEST", SPEECH_ACT)
+greetings_markup = Markup("hello", SPEECH_ACT)
+pleasantry_markup = Markup("polite", TONE)
+rude_markup = Markup("impolite", TONE)
+ask_markup = Markup("question", SPEECH_ACT)
+
+test.add_markup(ask_day, ask_day_markup)
+test.add_markup(greetings, greetings_markup)
+test.add_markup(pleasantry, pleasantry_markup)
+test.add_markup(rude, rude_markup)
+test.add_markup(ask, ask_markup)
 
 
 """

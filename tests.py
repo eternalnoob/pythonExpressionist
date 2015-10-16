@@ -1,6 +1,6 @@
 """import unittest for running tests"""
 import unittest
-from grammar import NonterminalSymbol, Rule, parse_rule, PCFG, SystemVar
+from grammar import NonterminalSymbol, Rule, parse_rule, PCFG, SystemVar, Markup, MarkupSet
 
 class TestNonterminalEquivalency(unittest.TestCase):
     """
@@ -27,6 +27,23 @@ class TestNonterminalEquivalency(unittest.TestCase):
         self.assertEqual(self.a_nonterminal.tag, self.b_nonterminal.tag)
         self.assertNotEqual(self.a_nonterminal, self.b_nonterminal)
 
+    def test_different_markup_not_eq(self):
+        """
+        Heaven forbid you had two nonterminals with the same tag but different markup, they should
+        not equal eachother
+        """
+
+        MRK_SET1=MarkupSet('A_MARKUP')
+        MRK_SET2=MarkupSet('B_MARKUP')
+        MRK_1=Markup('AAA', MRK_SET1)
+        MRK_2=Markup('BBB', MRK_SET2)
+
+        self.a_nonterminal.add_markup(MRK_1)
+        self.b_nonterminal.add_markup(MRK_2)
+
+        self.assertIn(MRK_1,self.a_nonterminal.markup)
+        self.assertIn(MRK_1, self.a_nonterminal.markup)
+        self.assertNotEqual(self.a_nonterminal, self.b_nonterminal)
 
 class TestRuleEquivalency(unittest.TestCase):
     """
@@ -72,6 +89,8 @@ class TestPcfgOperations(unittest.TestCase):
     def setUp(self):
         self.test_gram = PCFG()
         self.nonterminal = NonterminalSymbol('a')
+        self.markup_class = MarkupSet('TEST_MARKUP')
+        self.markup = Markup("MARKUP", self.markup_class)
 
     def test_add_nonterminal(self):
         """
@@ -123,6 +142,22 @@ class TestPcfgOperations(unittest.TestCase):
         a_prod = parse_rule("[[b]], this is a test of expansion")
         self.test_gram.add_rule(self.nonterminal, a_prod)
         self.assertEqual(2, len(self.test_gram.nonterminals))
+
+    def test_markup_class_addition(self):
+        """
+        tests to ensure that if we add a markup to a nonterminal, and that markup class does not already
+        exist within our PCFG markup class list, we add it to the markup class list
+        """
+        self.nonterminal.add_markup(self.markup)
+        self.test_gram.add_nonterminal(self.nonterminal)
+        self.assertIn(self.markup.tagset, self.test_gram.markup_class)
+
+    def test_expansion_returns_markup(self):
+        """make sure our expansions return markup correctly"""
+
+        self.nonterminal.add_markup(self.markup)
+        self.test_gram.add_nonterminal(self.nonterminal)
+
 
 
     def test_empty_expansion(self):

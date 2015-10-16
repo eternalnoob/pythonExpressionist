@@ -5,15 +5,120 @@ generating grammars as opposed to parsing them
 import random
 import re
 import itertools
+import collections
+import csv
+
+
+class IntermediateDeriv(object):
+    """
+    This class is used in the probabilistic Monte Carlo Expansions to associate markup with
+    productions
+    markup contains all markup which led to a particular string being formed
+    expansion contains that string
+    these are then joined at the end
+    """
+
+    def __init__(self, markup, expansion):
+        self.markup = markup
+        self.expansion = expansion
+
+    def __eq__(self, other):
+        return self.markup == other.markup and self.expansion == other.expansion
+
+    def __str__(self):
+        return self.expansion.__str__()+" MARKUP"+self.markup.__str__()
+
+    def __add__(self, other):
+        return IntermediateDeriv(self.markup | other.markup, self.expansion + other.expansion)
+
+    def __lt__(self, other):
+        return self.expansion < other.expansion
+
+    def __radd__(self, other):
+        if other == 0:
+            return self
+        else:
+            return self.__add__(other)
+
+    def mcm_derive(self, samplesscalar,  markup):
+            return  self.expansion.mcm_derive(samplesscalar, markup)
+
+    def __repr__(self):
+        return self.__str__()
+
+    def __hash__(self):
+        return hash(( self.expansion))
+
+
+
+class Markup(object):
+    """
+    individual instance of markup, found as a list within NonterminalSymbol
+    note:nonterminals do not have markup associated by default,
+    add it using nonterminal.add_Markup
+    """
+
+    def __init__(self, tag, tagset):
+        """
+        create new markup belonging to tagset with given tag
+        :type tag: str
+        :type tagset: MarkupSet
+        """
+        self.tag = tag
+        self.tagset = tagset
+        #add ourself to our markup
+
+    def __eq__(self, other):
+        return self.tag == other.tag and self.tagset == other.tagset
+
+    def __str__(self):
+        return self.tag.__str__()+":"+self.tagset.__str__()
+
+    def __repr__(self):
+        return self.__str__()
+
+
+class MarkupSet(object):
+    """
+    Each MarkupSet has many Markup objects
+    stored in a set
+    """
+
+    def __init__(self, tagset):
+        self.tagset = tagset
+        self.markups = set()
+
+    def __eq__(self, other):
+        return self.tagset == other.tagset and self.markups == other.markups
+
+    def add_markup(self, markup):
+        """
+        add a markup to ourself
+        """
+        if markup.tagset == self.tagset:
+            self.markups.add(markup)
+
+    def remove_markup(self, markup):
+        """
+        remove a markup from our set
+        """
+        if markup.tagset == self.tagset and markup in self.markups:
+            self.markups.remove(markup)
+    def __str__(self):
+        return self.tagset
+
 
 class NonterminalSymbol(object):
     """A non-terminal symbol in a grammar."""
 
-    def __init__(self, tag):
+    def __init__(self, tag, markup=set()):
         """Initialize a NonterminalSymbol object."""
         self.tag = tag
         self.rules = []  # Unordered list of rule objects
         self.rules_probability_distribution = {}
+        self.markup = set()
+        if markup:
+            self.markup.add(markup)
 
     def __eq__(self, other):
         #equality depends on tag and rules
@@ -37,7 +142,14 @@ class NonterminalSymbol(object):
         selected_rule = self._pick_a_production_rule()
         return selected_rule.derive()
 
-    def monte_carlo_expand(self, samplesscalar=1):
+    def add_markup(self, markup):
+        """
+        adds markup to a given nonterminalSymbol
+        """
+        if markup:
+            self.markup.add(markup)
+
+    def monte_carlo_expand(self, samplesscalar=1, markup=set()):
         """
         probabilistically expand our nonterminal
         samplesScalar*n times, where n is the number of productions rules
@@ -49,32 +161,36 @@ class NonterminalSymbol(object):
         ret_list = []
         times = len(self.rules)*samplesscalar
 
+        #union the set of our markup and the markup we are called with
+        new_markup = self.markup | markup
+        chosen = []
+
         for _ in range(times):
             selected_rule = self._pick_a_production_rule()
-            rule_choices.append(selected_rule)
+            chosen.append(selected_rule)
+            rule_choices.append(IntermediateDeriv(new_markup, selected_rule))
 
         #ensure each possible production occurs at least once
 
         for rule in self.rules:
-            if rule not in rule_choices:
-                rule_choices.append(rule)
+            if rule not in chosen:
+                rule_choices.append(IntermediateDeriv(new_markup, rule))
 
-        for rule in rule_choices:
-            ret_list.append(rule.mcm_derive(samplesscalar))
+        for derivation in rule_choices:
+            #expand the rule if possible
+            ret_list.append(derivation.mcm_derive(samplesscalar, new_markup))
+
+        #there has to be a better way to do this
+        is_list = 1
+        for derivations in ret_list:
+            if not isinstance(derivations, list):
+                is_list = 0
+
+        if is_list:
+            ret_list = list(itertools.chain(*ret_list))
+
 
         return ret_list
-
-    def full_monte(self, samplesscalar=1):
-        """
-        This returns the flattened monte_carlo_expand for this nonterminal.
-        due to the recursive nature of it, monte_carlo_expand returns a list whose size is
-        len(self.rules)*samplesScalar, to represent each initial sample of our initial Nonterminal
-        """
-
-        #flatten the result of monte carlo expansion
-        return list(itertools.chain.from_iterable(self.monte_carlo_expand(samplesscalar)))
-
-
 
     def _pick_a_production_rule(self):
         """Probabilistically select a production rule."""
@@ -130,21 +246,22 @@ class TerminalSymbol(object):
         :type representation: string
         """
         self.representation = representation
+        self.markup = set()
     def __eq__(self, other):
         return self.representation == other.representation
 
-    def expand(self):
+    def expand(self, markup):
         """Return this terminal symbol."""
-        return self.representation
+        return IntermediateDeriv(self.markup | markup, self.representation)
 
-    def monte_carlo_expand(self):
+    def monte_carlo_expand(self, markup):
         """
         this is not a nonterminal, so the monte carlo_expand is the same as the normal expand
         """
-        return self.expand()
+        return self.expand(markup)
 
     def __str__(self):
-        return self.representation.__str__()
+        return "["+ self.representation.__str__()+"]"
 
     def __repr__(self):
         return self.__str__()
@@ -165,12 +282,12 @@ class SystemVar(TerminalSymbol):
     def __repr__(self):
         return self.__str__()
 
-    def expand(self):
-        """Return this terminal symbol."""
-        return self.__str__()
+    def expand(self, markup):
+        """Return systemVar"""
+        return IntermediateDeriv(self.markup | markup, self.__str__())
 
-    def monte_carlo_expand(self):
-        return self.expand()
+    def monte_carlo_expand(self, markup):
+        return self.expand( markup )
 
 
 class Rule(object):
@@ -202,37 +319,43 @@ class Rule(object):
         """Carry out the derivation specified for this rule."""
         return ''.join(symbol.expand() for symbol in self.derivation)
 
-    def mcm_derive(self, samplesscalar):
+    def mcm_derive(self, samplesscalar, markup):
         """carry out montecarlo derivation for this rule"""
         ret_list = []
         #for each value in derivation side of the rule
         for symbol in self.derivation:
-            symbol_arr = []
             #if the symbol is a nonterminal, monte_carlo_expand returns an array
             if isinstance(symbol, NonterminalSymbol):
                 #List containing the mcm expansions for a given symbol
-                for sample in symbol.monte_carlo_expand(samplesscalar):
-                    symbol_arr.append(sample)
+                ret_list.append(symbol.monte_carlo_expand(samplesscalar, markup))
+                    #samples should be intermediate derivations
             else:
-                symbol_arr.append(symbol.monte_carlo_expand())
+                toadd = []
+                toadd.append(symbol.monte_carlo_expand(markup))
+                ret_list.append(toadd)
 
-            ret_list.append(symbol_arr)
-
+        #nothing from here on to end of funct
         #ret list should be a list of lists
         #either TerminalSymbols or Nonterminals Symbols
         #take this and construct a list of TerminalSymbols and singleNonterminalSymbols
         #this means represent each possible combination of NonterminalSymbols
 
         #ret list contains the cartesian product of its subsets, representing all possible
-        #combinations of nonterminal choices to be made
-        ret_list = itertools.product(*ret_list)
+        #combinations of derivations
+        ret_list = list(itertools.product(*ret_list))
 
-        joined = []
-        for productions in ret_list:
-            joined.append(''.join(itertools.chain.from_iterable(list(productions))))
+        final = []
+        for values in ret_list:
+            final.append(sum(values))
+
+        #at this point, ret list should be a list of the Intermediate derivations
+        #ret_list = list(itertools.chain.from_iterable(ret_list))
 
 
-        return joined
+        return final
+
+
+
 
     def __str__(self):
         return self.symbol.__str__()+ ' -> ' + self.derivation.__str__()
@@ -276,11 +399,15 @@ class PCFG(object):
     def __init__(self):
         self.nonterminals = []
         self.system_vars = []
+        self.markup_class = set()
 
     def add_nonterminal(self, nonterminal):
         """ add a nonterminal to our grammar"""
         if nonterminal not in self.nonterminals:
             self.nonterminals.append(nonterminal)
+        for markups in nonterminal.markup:
+            if markups.tagset not in self.markup_class:
+                self.markup_class.add(markups.tagset)
 
 
     def add_rule(self, nonterminal, derivation, application_rate=1):
@@ -321,7 +448,8 @@ class PCFG(object):
         return self.nonterminal(nonterminal).expand()
 
     def nonterminal(self, nonterminal):
-        """handles weirdness"""
+        """handles weirdness, this works kind of in the place of a dictionary which I will implement
+        when I have more time and sanity"""
         for inner_nonterminal in self.nonterminals:
             if nonterminal.tag == inner_nonterminal.tag:
                 return inner_nonterminal
@@ -335,18 +463,35 @@ class PCFG(object):
                 self.nonterminal(nonterminal)._fit_probability_distribution()
 
     def monte_carlo_expand(self, nonterminal, samplesscalar=1):
+
         """
         performs monte_carlo_expand on a given nonterminal
-        returns a list of size len(nonterminal.rules)*samplesscalar
+        returns a list of size len(nonterminal.rules)*samplesscalar(no longer true, now size can
+        very depending on if every possible production was sampled
         """
+
         return self.nonterminal(nonterminal).monte_carlo_expand(samplesscalar)
 
+    def add_markup(self, nonterminal, markup):
+        """
+        add markup to an existing nonterminal
+        :type markup: Markup
+        """
+        if markup.tagset not in self.markup_class:
+            self.markup_class.add(markup.tagset)
+        self.nonterminal(nonterminal).add_markup(markup)
 
-    def full_monte(self, nonterminal, samplesscalar=1):
+    def export(self, nonterminal, samplesscalar=1):
         """
-        returns the flattened monte_carlo_expand for a nonterminal
-        returns on list, size depends on the number of productions for each nonterminal and number
-        of nonterminals expanded
+        returns a tab seperated value list of productions, duplicates removed.
+        one thing I need to change is to output the set of markup in a nicer fashion
         """
-        return self.nonterminal(nonterminal).full_monte(samplesscalar)
+        expansion = collections.Counter(sorted(self.monte_carlo_expand(nonterminal,samplesscalar)))
+        with open('output.tsv', 'w') as csvfile:
+            row_writer = csv.writer( csvfile, delimiter='\t', quotechar='|', quoting =
+                    csv.QUOTE_MINIMAL)
+            row_writer.writerow( ['Deep Meaning', 'Expansion','Markup', 'Probability'] )
+            for deriv in expansion:
+                row_writer.writerow( [nonterminal, str(deriv.expansion),  deriv.markup,
+                        float(expansion[deriv])/sum(expansion.values())])
 
