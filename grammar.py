@@ -23,7 +23,10 @@ class IntermediateDeriv(object):
         self.expansion = expansion
 
     def __eq__(self, other):
-        return self.markup == other.markup and self.expansion == other.expansion
+        if isinstance(other, IntermediateDeriv):
+            return self.markup == other.markup and self.expansion == other.expansion
+        else:
+            return False
 
     def __str__(self):
         return self.expansion.__str__()+" MARKUP"+self.markup.__str__()
@@ -69,10 +72,13 @@ class Markup(object):
         #add ourself to our markup
 
     def __eq__(self, other):
-        return self.tag == other.tag and self.tagset == other.tagset
+        if isinstance(other, Markup):
+            return self.tag == other.tag and self.tagset == other.tagset
+        else:
+            return False
 
     def __str__(self):
-        return self.tag.__str__()+":"+self.tagset.__str__()
+        return self.tagset.__str__()+":"+self.tag.__str__()
 
     def __repr__(self):
         return self.__str__()
@@ -121,8 +127,11 @@ class NonterminalSymbol(object):
             self.markup.add(markup)
 
     def __eq__(self, other):
+        if isinstance(other, NonterminalSymbol):
         #equality depends on tag and rules
-        return self.tag == other.tag and self.rules == other.rules
+            return self.tag == other.tag and self.rules == other.rules
+        else:
+            return False
 
     def add_rule(self, derivation, application_rate=1):
         """Add a new production rule for this nonterminal symbol."""
@@ -159,7 +168,10 @@ class NonterminalSymbol(object):
         #expand n times
         rule_choices = []
         ret_list = []
-        times = len(self.rules)*samplesscalar
+        if len(self.rules) != 0:
+            times = len(self.rules)*samplesscalar
+        else:
+            times = 1
 
         #union the set of our markup and the markup we are called with
         new_markup = self.markup | markup
@@ -204,7 +216,7 @@ class NonterminalSymbol(object):
             return selected_rule
         else:
             #if there are no rules for the nonterminal, return empty string
-            return Rule(self, [TerminalSymbol("")])
+            return Rule(self, [TerminalSymbol(self.__str__())])
 
     def __str__(self):
         return '[['+self.tag.__str__()+']]'
@@ -248,7 +260,10 @@ class TerminalSymbol(object):
         self.representation = representation
         self.markup = set()
     def __eq__(self, other):
-        return self.representation == other.representation
+        if isinstance(other, TerminalSymbol):
+            return self.representation == other.representation
+        else:
+            return False
 
     def expand(self, markup):
         """Return this terminal symbol."""
@@ -307,7 +322,10 @@ class Rule(object):
 
     def __eq__(self, other):
         #equality does not consider application_rate
-        return self.symbol.tag == other.symbol.tag and self.derivation == other.derivation
+        if isinstance(other, Rule):
+            return self.symbol.tag == other.symbol.tag and self.derivation == other.derivation
+        else:
+            return False
 
     def modify_application_rate(self, application_rate):
         """

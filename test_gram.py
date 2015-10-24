@@ -31,6 +31,7 @@ greetings = NonterminalSymbol('greetings')
 ask = NonterminalSymbol('ask')
 rude = NonterminalSymbol('rude')
 pleasantry = NonterminalSymbol('pleasantry')
+empty_expand = NonterminalSymbol('EMPTY')
 
 test.add_rule(greetings, greetings_prod1, 5)
 test.add_rule(greetings, greetings_prod2, 3)
@@ -48,6 +49,7 @@ test.add_rule(rude, rude_prod3, 7)
 test.add_rule(ask, ask_prod1, 5)
 test.add_rule(ask, ask_prod2, 10)
 test.add_rule(ask, ask_prod3, 8)
+test.add_rule(ask, [empty_expand], 5)
 
 SPEECH_ACT = MarkupSet("speech_act")
 TONE = MarkupSet("tone")
@@ -57,12 +59,14 @@ greetings_markup = Markup("hello", SPEECH_ACT)
 pleasantry_markup = Markup("polite", TONE)
 rude_markup = Markup("impolite", TONE)
 ask_markup = Markup("question", SPEECH_ACT)
+empty_markup = Markup("EMPTYQUESTION", SPEECH_ACT)
 
 test.add_markup(ask_day, ask_day_markup)
 test.add_markup(greetings, greetings_markup)
 test.add_markup(pleasantry, pleasantry_markup)
 test.add_markup(rude, rude_markup)
 test.add_markup(ask, ask_markup)
+test.add_markup(empty_expand, empty_markup)
 
 
 """
