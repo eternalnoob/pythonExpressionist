@@ -1,0 +1,30 @@
+<!DOCTYPE html>
+<html>
+  <head lang="en">
+    <meta charset="UTF-8">
+    <title>Flask React</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <!-- styles -->
+    <link href="{{url_for('static', filename='css/bootstrap.css')}}" rel ="stylesheet"/>
+  </head>
+  <body>
+    <div class="container">
+      <h1>Flask React</h1>
+      <br>
+      <div id="main"></div>
+    </div>
+
+    <div id='example'></div>
+
+    <div id='button_list'></div>
+
+    <div id='nonterminal_list'></div>
+        <!-- jQuery (necessary for Bootstrap's JavaScript plugins) -->
+        <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.11.3/jquery.min.js"></script>
+        <!-- Include all compiled plugins (below), or include individual files as needed -->
+        <script src="{{ url_for('static', filename='scripts/js/bootstrap/dist/js/boostrap.min.js')}}"></script>
+        <!-- scripts -->
+        <script src="{{ url_for('static', filename='scripts/jsx/bundle.js') }}"></script>
+      </body>
+    </html>
+

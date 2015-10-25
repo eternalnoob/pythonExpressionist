@@ -1,0 +1,18 @@
+{
+  "name": "pythonExpressionist",
+  "version": "0.0.0",
+  "description": "First commit to an empty repo for Expressionist",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git://github.com/eternalnoob/pythonExpressionist.git"
+  },
+  "author": "Ethan Seither",
+  "license": "BSD-2-Clause",
+  "bugs": {
+    "url": "https://github.com/eternalnoob/pythonExpressionist/issues"
+  }
+}
