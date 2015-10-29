@@ -14,11 +14,12 @@ var RuleBar = React.createClass({
   render:function() {
     var rules = []
     this.props.rules.forEach(function(rule, i){
-      rules.push(<rule {...rule} key={i}/>);
+      rules.push(<Rule {...rule} key={i}/>);
       },this)
     return(
           <div>
-            {rules}
+          <h3>Rules</h3>
+          {rules}
           </div>
       );
   }

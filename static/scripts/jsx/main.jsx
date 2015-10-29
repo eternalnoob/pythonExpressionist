@@ -1,7 +1,8 @@
 import React from "react";
 import ReactDOM from "react-dom";
+var NonterminalList = require('./components/NonterminalList.jsx')
 var Nonterminal = require('./components/Nonterminal.jsx')
-var Rule = require('./components/Rule.jsx')
+var Interface = require('./components/Interface.jsx')
 
 
 {/*
@@ -84,8 +85,9 @@ var Markup = React.createClass({
 */}
 
 
-const nonterminal = {name: "TEST_NONTERMINAL", rules: [{expansion: "testExpand", app_rate:5},{expansion:"test1", app_rate:3}], markup: ["test","test2"]}
-
+const nonterminal = {name: "TEST_NONTERMINAL", deep: false, complete: true, rules: [{expansion: "testExpand", app_rate:5},{expansion:"test1", app_rate:3}], markup: ["test","test2"]}
+const nonterminal2 = {name: "Secondt_nonterminal", deep:true, complete: false, rules: [{expansion:"firstExpand", app_rate:5}], markup: ["set1:act1","set2:act2"]}
+const list = {nonterminals: [{...nonterminal}, {...nonterminal2}], markup: ["shut the fuck up", "and study"] }
 ReactDOM.render(
-  <Nonterminal {...nonterminal}/>,
-  document.getElementById('button_list'))
+  <Interface/>,
+  document.getElementById('markup_list'))

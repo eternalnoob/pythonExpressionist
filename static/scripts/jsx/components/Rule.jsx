@@ -8,7 +8,7 @@ var Rule = React.createClass({
   },
 
   render:function() {
-    return( <div> {this.props.expansion}test itout {this.props.app_rate}  </div>);
+    return( <h3> {this.props.expansion} test itout </h3>);
   }
 });
 module.exports = Rule
