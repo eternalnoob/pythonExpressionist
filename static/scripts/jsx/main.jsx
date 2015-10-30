@@ -6,6 +6,9 @@ var Interface = require('./components/Interface.jsx')
 
 
 {/*
+
+      markups: [{set: "markupset1", tag: "test1"},{set: "markupset2", tag: "test2mark"},{set: "markupset1", tag: "test3mark"},{set: "markupset1", tag: "test4mark"}],
+
 var Markup = React.createClass({
   getInitialState: function(){
     return{present: this.props.initialPresent};

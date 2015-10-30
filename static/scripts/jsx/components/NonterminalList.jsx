@@ -11,7 +11,7 @@
 
 
   var NonterminalList = React.createClass({
-    PropTypes: {
+    propTypes: {
       nonterminals: React.PropTypes.arrayOf(React.PropTypes.shape({
         name:  React.PropTypes.string,
         rules: React.PropTypes.array,
@@ -108,8 +108,10 @@
       var total = deep_inc.concat(incomplete.concat(deep_comp.concat(complete)))
 
 
+
+
       return(
-        <ListGroup>
+        <ListGroup style={{height: "100%"}}>
         {total}
         <ListGroupItem bsSize="xsmall" key ="ADDNEW" onClick={this.props.onAddNonterminal.bind(this, "test")}>Add New Nonterminal</ListGroupItem>
         </ListGroup>

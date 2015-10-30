@@ -2,6 +2,7 @@
 
 var React = require('react')
 var NonterminalList = require('./NonterminalList.jsx')
+var MarkupBar = require('./MarkupBar.jsx')
 
 {/*
         <HeaderBar/>
@@ -14,11 +15,17 @@ var Interface = React.createClass({
   getInitialState: function() {
     return{
       nonterminals: [
-      {name: "TEST_NONTERMINAL", deep: false, complete: true, rules: [{expansion: "testExpand", app_rate:5},{expansion:"test1", app_rate:3}], markup: ["test","test2"]},
-      {name: "Second_nonterminal", deep:true, complete: false, rules: [{expansion:"firstExpand", app_rate:5}], markup: ["set1:act1","set2:act2"]},
-      {name: "COMPLETE DEEP REP", deep: true, complete: true, rules: [], markup: []}
+
+      {name: "COMPLETE DEEPREP", deep: true, complete: true, rules: [{expansion: "testExpand", app_rate:5},
+      {expansion:"test1", app_rate:3}], markup: [{set:"markupset2",tags:["test2mark"]},{set:"markupset1",tags:["test4mark"]}]},
+
+      {name: "Second_nonterminal", deep:true, complete: true, rules: [{expansion:"firstExpand", app_rate:5}],
+      markup: [{set: "markupset1",tags:["test1"]},{set:"markupset2",tags:["test2mark"]}]},
+
+      {name: "Incomplete nondeep", deep: false, complete: false, rules: [], markup: []},
+      {name: "Incomplete deep", deep: true, complete: false, rules:[], markup: []}
       ],
-      markups: ["test","test2","set1:act1","set2:act2"],
+      markups: [ {set: "markupset1", tags: ["test1","test3mark","test4mark"]} , {set: "markupset2", tags: ["test2mark"]} ],
       expansion_feedback: "",
       markup_feedback: "",
       current_nonterminal: -1,
@@ -55,12 +62,24 @@ var Interface = React.createClass({
     }
   },
     
-
   render: function() {
+    var present_markups = []
+    var def_rules = []
+    if( this.state.current_nonterminal != -1 )
+    {
+      present_markups=this.state.nonterminals[this.state.current_nonterminal].markup
+      def_rules = this.state.nonterminals[this.state.current_nonterminal].rules
+    }
+
     return(
     <div>
-      <h1>THIS IS A TEST</h1>
-        <NonterminalList nonterminals={this.state.nonterminals} onAddNonterminal={this.handleNonterminalAdd} onClickNonterminal={this.handleNonterminalClick}>Test</NonterminalList>
+      <div style= {{"width": "75%", position: "fixed", top: 0, left: 0}}>
+      <h1>Markupbar here</h1>
+      <MarkupBar present = {present_markups} total={this.state.markups}/>
+      </div>
+    <div style= {{"maxWidth": "25%","height":"100%", "minWidth": "15%", position: "fixed", top: 0, right: 0}}>
+        <NonterminalList style= {{"height":"100%"}}nonterminals={this.state.nonterminals} onAddNonterminal={this.handleNonterminalAdd} onClickNonterminal={this.handleNonterminalClick}>Test</NonterminalList>
+    </div>
     </div>
     );
   }
