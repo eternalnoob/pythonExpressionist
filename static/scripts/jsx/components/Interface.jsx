@@ -3,17 +3,10 @@
 var React = require('react')
 var NonterminalList = require('./NonterminalList.jsx')
 var MarkupBar = require('./MarkupBar.jsx')
+var findIndex = require('lodash/array/findIndex')
+var jQuery = require('jquery')
 
-{/*
-        <HeaderBar/>
-        <MarkupList present = {this.state.nonterminals[current_nonterminal].markup} total={this.state.markups}/>
-        <Board rule={this.state.current_rule} nonterminal={this.state.current_rule}/>
-        <RuleList {...this.state.nonterminals[current_nonterminal].rules}/>
-        <Feedback expansion = {this.state.expansion_feedback} markup_feedback = {this.state.markup_feedback} />
-*/}
-var Interface = React.createClass({
-  getInitialState: function() {
-    return{
+/*
       nonterminals: [
 
       {name: "COMPLETE DEEPREP", deep: true, complete: true, rules: [{expansion: "testExpand", app_rate:5},
@@ -30,9 +23,59 @@ var Interface = React.createClass({
       markup_feedback: "",
       current_nonterminal: -1,
       current_rule: -1
+*/
+
+var Interface = React.createClass({
+  getInitialState: function() {
+    console.log("test")
+    var a
+    jQuery.ajax({
+      url:'/default',
+      dataType: 'json',
+      async: false,
+      cache:false,
+      success: function(data) {
+      console.log("we did it?")
+      console.log(data)
+        a = data
+      }.bind(this),
+      error: function(xhr, status, err) {
+        console.error(this.props.url, status, err.toString());
+      }.bind(this)
+      });
+      var b=a['nonterminals']
+      var c=a['markups']
+      var d=a['system_vars']
+    return{
+      nonterminals: b,
+      markups: c,
+      system_vars: d,
+      expansion_feedback: "",
+      markup_feedback: "",
+      current_nonterminal: "",
+      current_rule: -1
     }
   },
 
+  updateFromServer: function() {
+    console.log("test")
+    jQuery.ajax({
+      url:'/default',
+      dataType: 'json',
+      async: 'false',
+      cache:false,
+      success: function(data) {
+      console.log("we did it?")
+      console.log(data)
+        return data
+      }.bind(this),
+      error: function(xhr, status, err) {
+        console.error(this.props.url, status, err.toString());
+      }.bind(this)
+      });
+  },
+
+  //this handles the context switching (what nonterminal are we on)
   handleNonterminalClick: function(position) {
     if (this.state.nonterminals[position])
     {
@@ -42,6 +85,7 @@ var Interface = React.createClass({
     }
   },
 
+  //this handles the addition of a nonterminal
   handleNonterminalAdd: function(name) {
     
     console.log("You are Adding a nonterminal with name: " + name)
@@ -54,18 +98,54 @@ var Interface = React.createClass({
     }
     if(duplicate == 0)
     {
-      this.setState({nonterminals: this.state.nonterminals.concat( [{name: name, rules:[], markup:[], deep:false, complete:false}])} );
+      //AJAX HERE
     }
     else
     {
       console.log("Duplicate Nonterminal!")
     }
   },
+
+  //these handle clicking markup to add it to a nonterminal
+  handleMarkupClick: function(set, tag)
+  {
+    console.log("you are clicking "+ set +":"+tag)
+    if (this.state.current_nonterminal != -1)
+    {
+      //AJAX GOES HERE
+
+      /*
+        console.log("Active Nonterminal is "+ this.state.current_nonterminal)
+      var current=this.state.nonterminals[this.state.current_nonterminal]
+      var set_index = findIndex(current.markup, {'set': set} )
+      
+      if (set_index != -1)
+      {
+        var current_tags = current[set_index].tags
+      }
+      else
+      { var temp_mark = {'set': set, tags:[tag]}
+      }
+      */
+
+    }
+  },
+  
+  handleMarkupSetAdd: function()
+  {
+    console.log("You are adding a MarkupSet!")
+    //AJAX IT BOIII
+  },
+  handleMarkupAdd: function(set)
+  {
+    console.log("You are adding a single markup to set "+set)
+    //AJAXAROONI
+  },
     
   render: function() {
     var present_markups = []
     var def_rules = []
-    if( this.state.current_nonterminal != -1 )
+    if( this.state.current_nonterminal != "" )
     {
       present_markups=this.state.nonterminals[this.state.current_nonterminal].markup
       def_rules = this.state.nonterminals[this.state.current_nonterminal].rules
@@ -74,8 +154,7 @@ var Interface = React.createClass({
     return(
     <div>
       <div style= {{"width": "75%", position: "fixed", top: 0, left: 0}}>
-      <h1>Markupbar here</h1>
-      <MarkupBar present = {present_markups} total={this.state.markups}/>
+      <MarkupBar onClickMarkup={this.handleMarkupClick} onAddMarkup={this.handleMarkupAdd} onAddMarkupSet={this.handleMarkupSetAdd} present = {present_markups} total={this.state.markups}/>
       </div>
     <div style= {{"maxWidth": "25%","height":"100%", "minWidth": "15%", position: "fixed", top: 0, right: 0}}>
         <NonterminalList style= {{"height":"100%"}}nonterminals={this.state.nonterminals} onAddNonterminal={this.handleNonterminalAdd} onClickNonterminal={this.handleNonterminalClick}>Test</NonterminalList>

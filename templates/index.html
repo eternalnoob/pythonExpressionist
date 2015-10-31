@@ -8,6 +8,10 @@
     <link href="{{url_for('static', filename='css/bootstrap.css')}}" rel ="stylesheet"/>
   </head>
   <body>
+  <script type=text/javascript>
+      $SCRIPT_ROOT = {{ request.script_root|tojson|safe }};
+      console.log($SCRIPT_ROOT)
+  </script>
     <div class="container">
       <br>
       <div id="main"></div>

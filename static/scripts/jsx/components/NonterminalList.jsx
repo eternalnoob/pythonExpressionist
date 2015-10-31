@@ -12,31 +12,9 @@
 
   var NonterminalList = React.createClass({
     propTypes: {
-      nonterminals: React.PropTypes.arrayOf(React.PropTypes.shape({
-        name:  React.PropTypes.string,
-        rules: React.PropTypes.array,
-        markup: React.PropTypes.array,
-        complete: React.PropTypes.bool,
-        deep: React.PropTypes.bool
-      })),
+      nonterminals: React.PropTypes.object,
       onAddNonterminal: React.PropTypes.func,
       onClickNonterminal: React.PropTypes.func
-    },
-    getDefaultProps: function() {
-      return{
-        nonterminals: []
-      };
-    },
-
-
-    handleClick: function(i) {
-      console.log("you clicked " + this.props.nonterminals[i].name +" from NonterminalList! at number " + i);
-      this.props.onClickNonterminal
-    },
-
-    handleAdd: function(name) {
-      console.log("you clicked add" + name +" from NonterminalList!");
-      this.props.onAddTerminal
     },
 
     render: function() {
@@ -75,21 +53,22 @@
       var deep_inc = []
       var deep_comp = []
 
-      var arr_length = this.props.nonterminals.length
-
+    
       {/*forgive me for I have sinned*/}
+      var NT_LIST = Object.keys(this.props.nonterminals)
+      var arr_length = NT_LIST.length
       for ( var i = 0; i < arr_length; i++ )
       {
-        var current = this.props.nonterminals[i]
-        if(this.props.nonterminals[i].complete == false)
+        var current = this.props.nonterminals[NT_LIST[i]]
+        if(current.complete == false)
         {
           if(current.deep == true)
           {
-            deep_inc.push(<Nonterminal {...current} onClick={this.props.onClickNonterminal.bind(this, i)} key={current.name}>{current.name}</Nonterminal>);
+            deep_inc.push(<Nonterminal {...current} onClick={this.props.onClickNonterminal.bind(null, NT_LIST[i])} name={NT_LIST[i]} key={NT_LIST[i]}>{NT_LIST[i]}</Nonterminal>);
           }
           else
           {
-          incomplete.push(<Nonterminal {...current} onClick={this.props.onClickNonterminal.bind(this, i)} key={current.name}>{current.name}</Nonterminal>);
+            incomplete.push(<Nonterminal {...current} onClick={this.props.onClickNonterminal.bind(null, NT_LIST[i])} name={NT_LIST[i]} key={NT_LIST[i]}>{NT_LIST[i]}</Nonterminal>);
           }
 
         }
@@ -97,11 +76,11 @@
         {
           if(current.deep == true)
           {
-            deep_comp.push(<Nonterminal {...current} onClick={this.props.onClickNonterminal.bind(this, i)} key={current.name}>{current.name}</Nonterminal>);
+            deep_comp.push(<Nonterminal {...current} onClick={this.props.onClickNonterminal.bind(null, NT_LIST[i])} name={NT_LIST[i]} key={NT_LIST[i]}>{NT_LIST[i]}</Nonterminal>);
           }
           else
           {
-          complete.push(<Nonterminal {...current} onClick={this.props.onClickNonterminal.bind(this, i)} key={current.name}>{current.name}</Nonterminal>);
+            complete.push(<Nonterminal {...current} onClick={this.props.onClickNonterminal.bind(null, NT_LIST[i])} name={NT_LIST[i]} key={NT_LIST[i]}>{NT_LIST[i]}</Nonterminal>);
           }
         }
       }
@@ -113,7 +92,7 @@
       return(
         <ListGroup style={{height: "100%"}}>
         {total}
-        <ListGroupItem bsSize="xsmall" key ="ADDNEW" onClick={this.props.onAddNonterminal.bind(this, "test")}>Add New Nonterminal</ListGroupItem>
+        <ListGroupItem bsSize="xsmall" key ="ADDNEW" onClick={this.props.onAddNonterminal.bind(null, "test")}>Add New Nonterminal</ListGroupItem>
         </ListGroup>
       );
     }

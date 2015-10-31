@@ -5,7 +5,7 @@ var Rule = require('./Rule.jsx')
 var RuleBar = React.createClass({
   propTypes: {
     rules: React.PropTypes.arrayOf( React.PropTypes.shape({
-      expansion: React.PropTypes.string,
+      expansion: React.PropTypes.array,
       app_rate: React.PropTypes.number
       })
     ).isRequired

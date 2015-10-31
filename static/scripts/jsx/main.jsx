@@ -4,7 +4,6 @@ var NonterminalList = require('./components/NonterminalList.jsx')
 var Nonterminal = require('./components/Nonterminal.jsx')
 var Interface = require('./components/Interface.jsx')
 
-
 {/*
 
       markups: [{set: "markupset1", tag: "test1"},{set: "markupset2", tag: "test2mark"},{set: "markupset1", tag: "test3mark"},{set: "markupset1", tag: "test4mark"}],
