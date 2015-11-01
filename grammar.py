@@ -24,12 +24,20 @@ class IntermediateDeriv(object):
 
     def __eq__(self, other):
         if isinstance(other, IntermediateDeriv):
-            return self.markup == other.markup and self.expansion == other.expansion
+            return self.__str__() == other.__str__()
         else:
             return False
 
     def __str__(self):
         return self.expansion.__str__()+" MARKUP"+self.markup.__str__()
+
+    def to_json(self):
+
+        def set_default(obj):
+            if isinstance(obj, Markup):
+                return obj.__str__()
+
+        return json.dumps({"derivation": self.expansion.__str__(), "markup": list(self.markup)}, default=set_default)
 
     def __add__(self, other):
         return IntermediateDeriv(self.markup | other.markup, self.expansion + other.expansion)
@@ -84,6 +92,7 @@ class Markup(object):
         return self.__str__()
 
 
+
 class MarkupSet(object):
     """
     Each MarkupSet has many Markup objects
@@ -95,7 +104,10 @@ class MarkupSet(object):
         self.markups = set()
 
     def __eq__(self, other):
-        return self.tagset == other.tagset and self.markups == other.markups
+        if isinstance(other, MarkupSet):
+            return self.tagset == other.tagset and self.markups == other.markups
+        else:
+            return False
 
     def add_markup(self, markup):
         """
@@ -140,8 +152,12 @@ class NonterminalSymbol(object):
     def add_rule(self, derivation, application_rate=1):
         """Add a new production rule for this nonterminal symbol."""
         rule_object = Rule(symbol=self, derivation=derivation, application_rate=application_rate)
-        self.rules.append(rule_object)
-        self._fit_probability_distribution()
+        if rule_object not in self.rules:
+            self.rules.append(rule_object)
+            self._fit_probability_distribution()
+            return True
+        else:
+            return False
 
     def remove_rule(self, derivation):
         """remove a production rule for this nonterminal symbol."""
@@ -150,10 +166,11 @@ class NonterminalSymbol(object):
             self.rules.remove(rule_object)
             self._fit_probability_distribution()
 
-    def expand(self):
+    def expand(self, markup):
         """Expand this nonterminal symbol by probabilistically choosing a production rule."""
+        new_markup = markup | self.markup
         selected_rule = self._pick_a_production_rule()
-        return selected_rule.derive()
+        return selected_rule.derive(new_markup)
 
     def add_markup(self, markup):
         """
@@ -269,7 +286,7 @@ class TerminalSymbol(object):
         else:
             return False
 
-    def expand(self, markup):
+    def expand(self, markup=set()):
         """Return this terminal symbol."""
         return IntermediateDeriv(self.markup | markup, self.representation)
 
@@ -337,9 +354,9 @@ class Rule(object):
         """
         self.application_rate = application_rate
 
-    def derive(self):
+    def derive(self, markup=set()):
         """Carry out the derivation specified for this rule."""
-        return ''.join(symbol.expand() for symbol in self.derivation)
+        return sum((symbol.expand(markup=markup) for symbol in self.derivation))
 
     def derivation_json(self):
         def stringify(x): return x.__str__()
@@ -467,7 +484,7 @@ class PCFG(object):
 
     def expand(self, nonterminal):
         """expand a given nonterminal"""
-        return self.nonterminal(nonterminal).expand()
+        return self.nonterminal(nonterminal).expand(markup = set())
 
     def nonterminal(self, nonterminal):
         """handles weirdness, this works kind of in the place of a dictionary which I will implement
@@ -540,7 +557,7 @@ class PCFG(object):
                 markups[markup.tagset.__str__()] |= set([markup.tag])
 
             temp['markup'] = markup_dict
-            nonterminals[nonterminal.tag.__str__()] = temp
+            nonterminals[nonterminal.__str__()] = temp
 
         total['nonterminals'] = nonterminals
 

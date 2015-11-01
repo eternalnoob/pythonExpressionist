@@ -1,6 +1,7 @@
 var React = require('react')
 var DropdownButton = require('react-bootstrap').DropdownButton
 var MenuItem = require('react-bootstrap').MenuItem
+var Glyphicon = require('react-bootstrap').Glyphicon
 
 var MarkupSet = React.createClass({
   
@@ -29,18 +30,18 @@ var MarkupSet = React.createClass({
     if( this.props.present_nt.indexOf(current_tag) != -1)
     {
       out_arr.push(<MenuItem style={successStyle} key ={tag} eventKey={tag} onClick={this.props.onClickMarkup.bind(null, tagset_rep, current_tag)}
-      >{current_tag}is present</MenuItem>)
+      >{current_tag}</MenuItem>)
       any = 1
     }
     else
     {
       out_arr.push(<MenuItem bsStyle = 'default' onClick={this.props.onClickMarkup.bind(null, tagset_rep, current_tag)}
-      key={tag} eventKey={tag}>{current_tag}is not present</MenuItem>)
+      key={tag} eventKey={tag}>{current_tag}</MenuItem>)
     }
 
   }
 
-  out_arr.push(<MenuItem bsStyle = 'primary' key ={total_length} eventkey={total_length} onClick = {this.props.onAddMarkup.bind(null, tagset_rep)}>Add New Markup!</MenuItem>)
+  out_arr.push(<MenuItem bsStyle = 'primary' key ={total_length} eventkey={total_length} onClick = {this.props.onAddMarkup.bind(null, tagset_rep)}><Glyphicon glyph="plus"/></MenuItem>)
 
 
 

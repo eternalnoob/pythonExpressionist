@@ -3,6 +3,7 @@ var React = require('react')
 var ButtonGroup = require('react-bootstrap').ButtonGroup
 var Button = require('react-bootstrap').Button
 var chunk = require('lodash/array/chunk');
+var Glyphicon = require('react-bootstrap').Glyphicon
 
 var MarkupBar = React.createClass({
 
@@ -54,7 +55,7 @@ var MarkupBar = React.createClass({
     return(
     <ButtonGroup>
       {output}
-      <Button onClick = {this.props.onAddMarkupSet} key="addnew">Add Set</Button>
+      <Button onClick = {this.props.onAddMarkupSet} key="addnew"><Glyphicon glyph="plus"/></Button>
     </ButtonGroup>
     )
     }

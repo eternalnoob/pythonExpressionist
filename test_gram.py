@@ -1,7 +1,7 @@
 from grammar import NonterminalSymbol, parse_rule, TerminalSymbol, PCFG, MarkupSet, Markup
 test = PCFG()
 
-ask_day = NonterminalSymbol('ask_day')
+ask_day = NonterminalSymbol('ask_day', deep = True)
 
 test.add_nonterminal(ask_day)
 ask_day_prod1 = parse_rule("[[greetings]] [[pleasantry]] [[ask]]")
@@ -40,7 +40,7 @@ test.add_rule(greetings, greetings_prod3, 3)
 
 test.add_rule(pleasantry, pleasantry_prod1, 4)
 test.add_rule(pleasantry, pleasantry_prod2, 2)
-test.add_rule(pleasantry, pleasantry_prod2, 3)
+test.add_rule(pleasantry, pleasantry_prod3, 3)
 
 test.add_rule(rude, rude_prod1, 8)
 test.add_rule(rude, rude_prod2, 10)

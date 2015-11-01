@@ -1,6 +1,7 @@
 {/*This will contain the Individual NonterminalSymbols which are nested within NonterminalList*/}
 var React = require('react')
 var ListGroupItem = require('react-bootstrap').ListGroupItem
+var Glyphicon = require('react-bootstrap').Glyphicon
 
 var Nonterminal = React.createClass({
   propTypes: {
@@ -11,8 +12,12 @@ var Nonterminal = React.createClass({
   },
 
   render: function() {
+    var deep_glyph = ""
+    if (this.props.deep == true)
+      deep_glyph = <Glyphicon glyph="asterisk"/>
+
     return(
-          <ListGroupItem bsSize = "xsmall" bsStyle = {this.props.complete ? "success" : "danger" } onClick = {this.props.onClick}>{this.props.name}</ListGroupItem>
+          <ListGroupItem bsSize = "xsmall" bsStyle = {this.props.complete ? "success" : "danger" } onClick = {this.props.onClick}>{deep_glyph}   {this.props.name}</ListGroupItem>
     );}
 
 

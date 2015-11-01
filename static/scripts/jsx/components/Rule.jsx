@@ -11,5 +11,6 @@ var Rule = React.createClass({
   render:function() {
     return( <h3> {this.props.expansion} test itout </h3>);
   }
+
 });
 module.exports = Rule

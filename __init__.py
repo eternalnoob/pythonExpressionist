@@ -1,5 +1,6 @@
 from flask import Flask, render_template, request
 from test_gram import test
+from grammar import NonterminalSymbol
 
 app = Flask(__name__)
 debug = True
@@ -20,9 +21,14 @@ def add_nt():
 def set_deep():
     return "another tests"
 
+@app.route('/nonterminal/expand' , methods = ['GET', 'POST'])
+def expand_nt():
+    return test.expand(NonterminalSymbol("ask_day")).to_json()
+
 @app.route('/rule/add' , methods = ['GET', 'POST'])
 def add_rule():
     return "tested once more"
+
 
 @app.route('/rule/delete' , methods = ['GET', 'POST'])
 def del_rule():

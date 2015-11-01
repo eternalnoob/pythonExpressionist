@@ -1,6 +1,6 @@
 """import unittest for running tests"""
 import unittest
-from grammar import NonterminalSymbol, Rule, parse_rule, PCFG, SystemVar, Markup, MarkupSet, IntermediateDeriv
+from grammar import NonterminalSymbol, Rule, parse_rule, PCFG, SystemVar, Markup, MarkupSet, IntermediateDeriv, TerminalSymbol
 
 class TestNonterminalEquivalency(unittest.TestCase):
     """
@@ -131,8 +131,9 @@ class TestPcfgOperations(unittest.TestCase):
         b_prod = parse_rule("Wow")
         self.test_gram.add_rule(a_prod[0], b_prod)
         test_string = "Wow, this is a test of expansion"
+        test_deriv = IntermediateDeriv(set(), TerminalSymbol("Wow, this is a test of expansion"))
 
-        self.assertEqual(self.test_gram.expand(NonterminalSymbol('a')), test_string)
+        self.assertEqual(self.test_gram.expand(NonterminalSymbol('a')), test_deriv)
 
     def test_recursive_nt_addition(self):
         """
@@ -169,7 +170,7 @@ class TestPcfgOperations(unittest.TestCase):
         a_prod = parse_rule("[[b]], this is a test of expansion")
         self.test_gram.add_rule(self.nonterminal, a_prod)
         self.test_gram.add_nonterminal(a_prod[0])
-        test_string = ", this is a test of expansion"
+        test_string = IntermediateDeriv(set(),"[[b]], this is a test of expansion")
         self.assertEqual(self.test_gram.expand(NonterminalSymbol('a')), test_string)
 
 

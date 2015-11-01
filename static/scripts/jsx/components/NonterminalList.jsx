@@ -8,6 +8,7 @@
   var ListGroup = require('react-bootstrap').ListGroup
   var ListGroupItem = require('react-bootstrap').ListGroupItem
   var Input = require('react-bootstrap').Input
+  var Glyphicon = require('react-bootstrap').Glyphicon
 
 
   var NonterminalList = React.createClass({
@@ -91,8 +92,8 @@
 
       return(
         <ListGroup style={{height: "100%"}}>
-        {total}
-        <ListGroupItem bsSize="xsmall" key ="ADDNEW" onClick={this.props.onAddNonterminal.bind(null, "test")}>Add New Nonterminal</ListGroupItem>
+          {total}
+          <ListGroupItem bsSize="xsmall" key ="ADDNEW" onClick={this.props.onAddNonterminal}><Glyphicon glyph="plus"/></ListGroupItem>
         </ListGroup>
       );
     }
