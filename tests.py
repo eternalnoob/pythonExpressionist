@@ -98,7 +98,7 @@ class TestPcfgOperations(unittest.TestCase):
         """
         nonterminal = NonterminalSymbol('a')
         self.test_gram.add_nonterminal(nonterminal)
-        test_nonterminals = [NonterminalSymbol('a')]
+        test_nonterminals = {'a': NonterminalSymbol('a')}
         self.assertEqual(self.test_gram.nonterminals, test_nonterminals)
 
     def test_add_rule(self):
@@ -109,7 +109,7 @@ class TestPcfgOperations(unittest.TestCase):
         test_derivation = [NonterminalSymbol('b'), "aaaaade"]
         self.test_gram.add_rule(self.nonterminal, test_derivation)
         test_rules = [Rule(self.nonterminal, test_derivation)]
-        self.assertEqual(self.test_gram.nonterminal(self.nonterminal).rules, test_rules)
+        self.assertEqual(self.test_gram.nonterminals.get(str(self.nonterminal.tag)).rules, test_rules)
 
     def test_remove_rule(self):
         """
@@ -118,7 +118,7 @@ class TestPcfgOperations(unittest.TestCase):
         self.test_gram.add_nonterminal(self.nonterminal)
         test_derivation = [NonterminalSymbol('b'), "aaaaade"]
         self.test_gram.remove_rule(self.nonterminal, test_derivation)
-        self.assertEqual(self.test_gram.nonterminal(self.nonterminal).rules, [])
+        self.assertEqual(self.test_gram.nonterminals.get(str(self.nonterminal.tag)).rules, [])
 
     def test_expansion(self):
         """
@@ -181,9 +181,9 @@ class TestPcfgOperations(unittest.TestCase):
         self.test_gram.add_nonterminal(self.nonterminal)
         a_prob = parse_rule("test of application_rate")
         self.test_gram.add_rule(self.nonterminal, a_prob)
-        old_app = self.test_gram.nonterminal(self.nonterminal).rules[0].application_rate
+        old_app = self.test_gram.nonterminals.get(str(self.nonterminal.tag)).rules[0].application_rate
         self.test_gram.modify_application_rate(self.nonterminal, a_prob, 5)
-        new_app = self.test_gram.nonterminal(self.nonterminal).rules[0].application_rate
+        new_app = self.test_gram.nonterminals.get(str(self.nonterminal.tag)).rules[0].application_rate
         self.assertNotEqual(old_app, new_app)
         self.assertEqual(new_app, 5)
 

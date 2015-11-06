@@ -11,7 +11,7 @@ def index():
 
 @app.route('/default' , methods = ['GET', 'POST'])
 def default():
-    return test.to_json()
+    return grammar.to_json()
 
 @app.route('/nonterminal/add' , methods = ['GET', 'POST'])
 def add_nt():
@@ -52,6 +52,7 @@ def toggle_tag():
 
 
 if __name__ == '__main__':
+    grammar = test
     app.debug = debug
     app.run()
 

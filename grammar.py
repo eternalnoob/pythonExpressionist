@@ -436,14 +436,14 @@ class PCFG(object):
     """
 
     def __init__(self):
-        self.nonterminals = []
+        self.nonterminals = {}
         self.system_vars = []
         self.markup_class = set()
 
     def add_nonterminal(self, nonterminal):
         """ add a nonterminal to our grammar"""
-        if nonterminal not in self.nonterminals:
-            self.nonterminals.append(nonterminal)
+        if not self.nonterminals.get(str(nonterminal.tag)):
+            self.nonterminals[str(nonterminal.tag)] = nonterminal
             for markups in nonterminal.markup:
                 if markups.tagset not in self.markup_class:
                     self.markup_class.add(markups.tagset)
@@ -459,47 +459,42 @@ class PCFG(object):
         or else we end up with nonterminals that have the same tag but do not have the same
         productions associated with them
         """
-        nonterm_add = self.nonterminal(nonterminal)
-        new_derivation = []
-        for token in derivation:
-            if isinstance(token, NonterminalSymbol):
-                if any(token.tag == nt.tag for nt in self.nonterminals):
-                    new_derivation.append(self.nonterminal(token))
-                else:
-                    self.add_nonterminal(token)
+        nonterm_add = self.nonterminals.get(str(nonterminal.tag))
+        if nonterm_add:
+            new_derivation = []
+            for token in derivation:
+                if isinstance(token, NonterminalSymbol):
+                    if self.nonterminals.get(token.tag):
+                        new_derivation.append(self.nonterminals.get(token.tag))
+                    else:
+                        self.add_nonterminal(token)
+                        new_derivation.append(token)
+                elif isinstance(token, SystemVar) and token not in self.system_vars:
+                    self.system_vars.append(token)
                     new_derivation.append(token)
-            elif isinstance(token, SystemVar) and token not in self.system_vars:
-                self.system_vars.append(token)
-                new_derivation.append(token)
-            else:
-                new_derivation.append(token)
+                else:
+                    new_derivation.append(token)
 
-        nonterm_add.add_rule(new_derivation, application_rate)
+            nonterm_add.add_rule(new_derivation, application_rate)
 
 
 
     def remove_rule(self, nonterminal, derivation):
         """remove a rule from a nonterminal"""
-        self.nonterminal(nonterminal).remove_rule(derivation)
+        self.nonterminals.get(str(nonterminal.tag)).remove_rule(derivation)
 
     def expand(self, nonterminal):
         """expand a given nonterminal"""
-        return self.nonterminal(nonterminal).expand(markup = set())
+        return self.nonterminals.get(str(nonterminal.tag)).expand(markup = set())
 
-    def nonterminal(self, nonterminal):
-        """handles weirdness, this works kind of in the place of a dictionary which I will implement
-        when I have more time and sanity"""
-        for inner_nonterminal in self.nonterminals:
-            if nonterminal.tag == inner_nonterminal.tag:
-                return inner_nonterminal
 
     def modify_application_rate(self, nonterminal, derivation, application_rate):
         """modify application_rate for the given nonterminal and derivation"""
-        rules = self.nonterminal(nonterminal).rules
+        rules = self.nonterminals.get(str(nonterminal.tag)).rules
         for rule in rules:
             if rule.derivation == derivation:
                 rule.modify_application_rate(application_rate)
-                self.nonterminal(nonterminal)._fit_probability_distribution()
+                self.nonterminals.get(str(nonterminal.tag))._fit_probability_distribution()
 
     def monte_carlo_expand(self, nonterminal, samplesscalar=1):
 
@@ -509,16 +504,17 @@ class PCFG(object):
         vary depending on if every possible production was sampled
         """
 
-        return self.nonterminal(nonterminal).monte_carlo_expand(samplesscalar)
+        return self.nonterminals.get(str(nonterminal.tag)).monte_carlo_expand(samplesscalar)
 
     def add_markup(self, nonterminal, markup):
         """
         add markup to an existing nonterminal
         :type markup: Markup
         """
-        if markup.tagset not in self.markup_class:
-            self.markup_class.add(markup.tagset)
-        self.nonterminal(nonterminal).add_markup(markup)
+        if self.nonterminals.get(str(nonterminal.tag)):
+            if markup.tagset not in self.markup_class:
+                self.markup_class.add(markup.tagset)
+            self.nonterminals.get(str(nonterminal.tag)).add_markup(markup)
 
     def export(self, nonterminal, samplesscalar=1):
         """
@@ -540,24 +536,24 @@ class PCFG(object):
         total = {}
         markups = collections.defaultdict(set)
         nonterminals = {}
-        for nonterminal in self.nonterminals:
+        for key, value in self.nonterminals.iteritems():
             temp = {}
-            if nonterminal.rules:
-                nonterminal.complete = True 
-            temp['deep'] = nonterminal.deep
-            temp['complete'] = nonterminal.complete
+            if value.rules:
+                value.complete = True 
+            temp['deep'] = value.deep
+            temp['complete'] = value.complete
             rules_list = []
-            for rules in nonterminal.rules:
+            for rules in value.rules:
                 rules_list.append({'expansion': rules.derivation_json(), 'app_rate': rules.application_rate})
             temp['rules'] = rules_list
 
             markup_dict = collections.defaultdict(set)
-            for markup in nonterminal.markup:
+            for markup in value.markup:
                 markup_dict[markup.tagset.__str__()] |= set([markup.tag])
                 markups[markup.tagset.__str__()] |= set([markup.tag])
 
             temp['markup'] = markup_dict
-            nonterminals[nonterminal.__str__()] = temp
+            nonterminals[value.tag.__str__()] = temp
 
         total['nonterminals'] = nonterminals
 
@@ -576,7 +572,12 @@ class PCFG(object):
 
 
 def from_json(json_in):
-    return "keep Dreaming"
+
+    gram_res = PCFG()
+    dict_rep = json.loads(json_in)
+
+
+    return dict_rep
 
 
 
