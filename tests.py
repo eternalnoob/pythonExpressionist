@@ -152,7 +152,9 @@ class TestPcfgOperations(unittest.TestCase):
         """
         self.nonterminal.add_markup(self.markup)
         self.test_gram.add_nonterminal(self.nonterminal)
-        self.assertIn(self.markup.tagset, self.test_gram.markup_class)
+        test = set()
+        test.add(self.markup)
+        self.assertEqual(self.test_gram.markup_class[self.markup.tagset.__str__()], test)
 
     def test_expansion_returns_markup(self):
         """make sure our expansions return markup correctly"""

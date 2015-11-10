@@ -105,7 +105,7 @@ class MarkupSet(object):
 
     def __eq__(self, other):
         if isinstance(other, MarkupSet):
-            return self.tagset == other.tagset and self.markups == other.markups
+            return self.tagset == other.tagset
         else:
             return False
 
@@ -122,8 +122,10 @@ class MarkupSet(object):
         """
         if markup.tagset == self.tagset and markup in self.markups:
             self.markups.remove(markup)
+
     def __str__(self):
-        return self.tagset
+        return self.tagset.__str__()
+
     def __repr__(self):
         return self.__str__()
 
@@ -139,8 +141,9 @@ class NonterminalSymbol(object):
         self.markup = set()
         self.deep = deep
         self.complete = False
-        if markup:
-            self.markup.add(markup)
+        for markups in list(markup):
+            if markups not in list(self.markup):
+                self.markup.add(markups)
 
     def __eq__(self, other):
         if isinstance(other, NonterminalSymbol):
@@ -172,12 +175,20 @@ class NonterminalSymbol(object):
         selected_rule = self._pick_a_production_rule()
         return selected_rule.derive(new_markup)
 
+    def set_deep(self, truthy):
+        self.deep = truthy
+
     def add_markup(self, markup):
         """
         adds markup to a given nonterminalSymbol
         """
-        if markup:
+        if markup and markup not in list(self.markup):
             self.markup.add(markup)
+
+    def remove_markup(self, markup_remove):
+        if markup_remove and markup_remove in list(self.markup):
+            for markup in list(self.markup):
+                self.markup.remove(markup)
 
     def monte_carlo_expand(self, samplesscalar=1, markup=set()):
         """
@@ -313,10 +324,23 @@ class SystemVar(TerminalSymbol):
         TerminalSymbol.__init__(self, representation)
 
     def __str__(self):
-        return "[" + self.representation + "]"
+        return "[" + str(self.representation) + "]"
 
     def __repr__(self):
         return self.__str__()
+    
+    def __cmp__(self, other):
+        #ughhh
+        if isinstance(other, SystemVar):
+            if str(self) < str(other):  # compare name value (should be unique)
+                return -1
+            elif str(self) > str(other):
+                return 1
+            else:
+                return 0              # should mean it's the same instance
+        else:
+            return 0
+
 
     def expand(self, markup):
         """Return systemVar"""
@@ -438,16 +462,16 @@ class PCFG(object):
     def __init__(self):
         self.nonterminals = {}
         self.system_vars = []
-        self.markup_class = set()
+        self.markup_class = {}
 
     def add_nonterminal(self, nonterminal):
         """ add a nonterminal to our grammar"""
         if not self.nonterminals.get(str(nonterminal.tag)):
             self.nonterminals[str(nonterminal.tag)] = nonterminal
-            for markups in nonterminal.markup:
-                if markups.tagset not in self.markup_class:
-                    self.markup_class.add(markups.tagset)
-
+        #this accomodates the recursive definition of nonterminals
+        for markups in list(nonterminal.markup):
+            self.add_markup(nonterminal, markups)
+            
 
     def add_rule(self, nonterminal, derivation, application_rate=1):
         """
@@ -506,14 +530,18 @@ class PCFG(object):
 
         return self.nonterminals.get(str(nonterminal.tag)).monte_carlo_expand(samplesscalar)
 
+    def set_deep(self, nonterminal, truthy):
+        self.nonterminals[str(nonterminal.tag)].set_deep(truthy)
+
     def add_markup(self, nonterminal, markup):
         """
         add markup to an existing nonterminal
         :type markup: Markup
         """
         if self.nonterminals.get(str(nonterminal.tag)):
-            if markup.tagset not in self.markup_class:
-                self.markup_class.add(markup.tagset)
+            if not self.markup_class.get(str(markup.tagset)):
+                self.markup_class[str(markup.tagset)] = set()
+            self.markup_class[str(markup.tagset)].add(markup)
             self.nonterminals.get(str(nonterminal.tag)).add_markup(markup)
 
     def export(self, nonterminal, samplesscalar=1):
@@ -530,6 +558,10 @@ class PCFG(object):
                 row_writer.writerow( [nonterminal, str(deriv.expansion),  deriv.markup,
                     float(expansion[deriv])/sum(expansion.values())])
 
+
+    def remove_markup(self, nonterminal, markup):
+        self.nonterminals.get(str(nonterminal.tag)).remove_markup(markup)
+    
 
 
     def to_json(self):
@@ -557,8 +589,15 @@ class PCFG(object):
 
         total['nonterminals'] = nonterminals
 
-        total['markups'] = markups
-        total['system_vars'] = set(self.system_vars)
+        total['markups'] = {}
+        for markupset in self.markup_class:
+            for markups in self.markup_class[markupset]:
+                if total['markups'].get(str(markupset)):
+                    total['markups'][str(markupset)] |= set([markups.tag])
+                else:
+                    total['markups'][str(markupset)] = set([markups.tag])
+            
+        total['system_vars'] = sorted(self.system_vars)
 
         def set_default(obj):
             if isinstance(obj, set):
@@ -566,8 +605,9 @@ class PCFG(object):
             if isinstance(obj, SystemVar):
                 return str(obj)
             raise TypeError
+        
 
-        return json.dumps(total, default=set_default)
+        return json.dumps(total, default=set_default, sort_keys=True)
             #create the nonterminal dictonary
 
 
@@ -575,9 +615,32 @@ def from_json(json_in):
 
     gram_res = PCFG()
     dict_rep = json.loads(json_in)
+    nonterminals = dict_rep.get('nonterminals')
+    for tag, nonterminal in nonterminals.iteritems():
+        rules = nonterminal['rules']
+        markup = nonterminal['markup']
+        print markup
+
+        #translate UI markup rep into data markup rep
+        tmp_markups = []
+        for markup_set, tags in markup.iteritems():
+            tmp_set = MarkupSet(markup_set)
+            for i in tags:
+                new_mark = Markup(i, tmp_set)
+                tmp_markups.append(new_mark)
 
 
-    return dict_rep
+
+        temp_nonterm = NonterminalSymbol(tag, markup = set(tmp_markups), deep=nonterminal['deep'])
+        gram_res.add_nonterminal(temp_nonterm)
+
+        for rule in rules:
+            #rule is an object
+            expansion = parse_rule(''.join(rule['expansion']))
+            application_rate = rule['app_rate']
+            gram_res.add_rule(temp_nonterm, expansion, application_rate)
+
+    return gram_res
 
 
 

@@ -62,9 +62,11 @@ ask_markup = Markup("question", SPEECH_ACT)
 empty_markup = Markup("EMPTYQUESTION", SPEECH_ACT)
 
 test.add_markup(ask_day, ask_day_markup)
+
 test.add_markup(greetings, greetings_markup)
 test.add_markup(pleasantry, pleasantry_markup)
 test.add_markup(rude, rude_markup)
+
 test.add_markup(ask, ask_markup)
 test.add_markup(empty_expand, empty_markup)
 
