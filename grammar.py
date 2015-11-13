@@ -169,6 +169,10 @@ class NonterminalSymbol(object):
             self.rules.remove(rule_object)
             self._fit_probability_distribution()
 
+    def remove_by_index(self, index):
+        self.rules.remove(self.rules[index])
+        self._fit_probability_distribution()
+
     def expand(self, markup):
         """Expand this nonterminal symbol by probabilistically choosing a production rule."""
         new_markup = markup | self.markup
@@ -185,10 +189,11 @@ class NonterminalSymbol(object):
         if markup and markup not in list(self.markup):
             self.markup.add(markup)
 
-    def remove_markup(self, markup_remove):
-        if markup_remove and markup_remove in list(self.markup):
-            for markup in list(self.markup):
-                self.markup.remove(markup)
+    def remove_markup(self, markup):
+        for markup_tags in list(self.markup):
+            if markup == markup_tags:
+                self.markup.remove(markup_tags)
+
 
     def monte_carlo_expand(self, samplesscalar=1, markup=set()):
         """
@@ -507,18 +512,20 @@ class PCFG(object):
         """remove a rule from a nonterminal"""
         self.nonterminals.get(str(nonterminal.tag)).remove_rule(derivation)
 
+    def remove_rule_by_index(self, nonterminal, rule_index):
+        """ remove a rule from a nonterminal by its index"""
+        self.nonterminals.get(str(nonterminal.tag)).remove_by_index(rule_index)
+
     def expand(self, nonterminal):
         """expand a given nonterminal"""
         return self.nonterminals.get(str(nonterminal.tag)).expand(markup = set())
 
 
-    def modify_application_rate(self, nonterminal, derivation, application_rate):
+    def modify_application_rate(self, nonterminal, rule_index, application_rate):
         """modify application_rate for the given nonterminal and derivation"""
         rules = self.nonterminals.get(str(nonterminal.tag)).rules
-        for rule in rules:
-            if rule.derivation == derivation:
-                rule.modify_application_rate(application_rate)
-                self.nonterminals.get(str(nonterminal.tag))._fit_probability_distribution()
+        rules[rule_index].modify_application_rate(application_rate)
+        self.nonterminals.get(str(nonterminal.tag))._fit_probability_distribution()
 
     def monte_carlo_expand(self, nonterminal, samplesscalar=1):
 
@@ -544,6 +551,36 @@ class PCFG(object):
             self.markup_class[str(markup.tagset)].add(markup)
             self.nonterminals.get(str(nonterminal.tag)).add_markup(markup)
 
+    def remove_markup(self, nonterminal, markup):
+        """
+        add markup to an existing nonterminal
+        :type markup: Markup
+        """
+        nonterminal = self.nonterminals.get(str(nonterminal.tag))
+        if nonterminal:
+            nonterminal.remove_markup(markup)
+
+    def toggle_markup(self, nonterminal, markup):
+        if markup in list(self.nonterminals.get(str(nonterminal.tag)).markup):
+            self.remove_markup(nonterminal, markup)
+            print "removing markup"
+        else:
+            print "adding markup"
+            self.add_markup(nonterminal, markup)
+
+    def add_unused_markup(self, markup):
+
+        if not self.markup_class.get(str(markup.tagset)):
+            self.markup_class[str(markup.tagset)] = set()
+
+        self.markup_class[str(markup.tagset)].add(markup)
+        print self.markup_class
+
+    def add_new_markup_set(self, markupSet):
+
+        if not self.markup_class.get(str(markupSet.tagset)):
+            self.markup_class[str(markupSet.tagset)] = set()
+
     def export(self, nonterminal, samplesscalar=1):
         """
         returns a tab seperated value list of productions, duplicates removed.
@@ -559,10 +596,6 @@ class PCFG(object):
                     float(expansion[deriv])/sum(expansion.values())])
 
 
-    def remove_markup(self, nonterminal, markup):
-        self.nonterminals.get(str(nonterminal.tag)).remove_markup(markup)
-    
-
 
     def to_json(self):
         total = {}
@@ -570,8 +603,10 @@ class PCFG(object):
         nonterminals = {}
         for key, value in self.nonterminals.iteritems():
             temp = {}
-            if value.rules:
+            if len(value.rules) != 0:
                 value.complete = True 
+            else:
+                value.complete = False
             temp['deep'] = value.deep
             temp['complete'] = value.complete
             rules_list = []
@@ -591,6 +626,7 @@ class PCFG(object):
 
         total['markups'] = {}
         for markupset in self.markup_class:
+            total['markups'][str(markupset)] = set()
             for markups in self.markup_class[markupset]:
                 if total['markups'].get(str(markupset)):
                     total['markups'][str(markupset)] |= set([markups.tag])
@@ -639,6 +675,8 @@ def from_json(json_in):
             expansion = parse_rule(''.join(rule['expansion']))
             application_rate = rule['app_rate']
             gram_res.add_rule(temp_nonterm, expansion, application_rate)
+    for markupSet in dict_rep.get('markups'):
+        gram_res.add_new_markup_set(markupSet)
 
     return gram_res
 

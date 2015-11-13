@@ -1,6 +1,6 @@
-from flask import Flask, render_template, request
+from flask import Flask, render_template, request, jsonify
 from test_gram import test
-from grammar import NonterminalSymbol
+import grammar
 
 app = Flask(__name__)
 debug = True
@@ -9,50 +9,87 @@ debug = True
 def index():
     return render_template('index.html')
 
-@app.route('/default' , methods = ['GET', 'POST'])
+@app.route('/default' , methods = ['GET'])
 def default():
-    return grammar.to_json()
+    return flask_grammar.to_json()
 
-@app.route('/nonterminal/add' , methods = ['GET', 'POST'])
+@app.route('/nonterminal/add' , methods = ['POST'])
 def add_nt():
-    return "test"
+    data = request.get_json()
+    flask_grammar.add_nonterminal( grammar.NonterminalSymbol(data['name']))
+    return data['name']
 
-@app.route('/nonterminal/deep' , methods = ['GET', 'POST'])
+@app.route('/nonterminal/deep' , methods = [ 'POST'])
 def set_deep():
+    data = request.get_json()
+    nonterminal = flask_grammar.nonterminals.get(data["nonterminal"])
+    if nonterminal:
+        if nonterminal.deep:
+            nonterminal.deep = False
+        else:
+            nonterminal.deep = True
+
     return "another tests"
 
-@app.route('/nonterminal/expand' , methods = ['GET', 'POST'])
+@app.route('/nonterminal/expand', methods=['GET'])
 def expand_nt():
-    return test.expand(NonterminalSymbol("ask_day")).to_json()
+    return test.expand(grammar.NonterminalSymbol("ask_day")).to_json()
 
-@app.route('/rule/add' , methods = ['GET', 'POST'])
+@app.route('/rule/add', methods=['POST'])
 def add_rule():
+    data = request.get_json()
+    rule = data['rule']
+    app_rate = data['app_rate']
+    nonterminal = grammar.NonterminalSymbol(data["nonterminal"])
+    flask_grammar.add_rule(nonterminal, grammar.parse_rule(rule), app_rate)
     return "tested once more"
 
 
-@app.route('/rule/delete' , methods = ['GET', 'POST'])
+@app.route('/rule/delete' , methods = ['POST'])
 def del_rule():
-    return ""
+    data = request.get_json()
+    rule = data['rule']
+    nonterminal = data['nonterminal']
+    flask_grammar.remove_rule_by_index(grammar.NonterminalSymbol(nonterminal), rule)
+    return " are we deleting a rule here?"
 
-@app.route('/rules/set_app' , methods = ['GET', 'POST'])
+@app.route('/rule/set_app' , methods = ['POST'])
 def set_app():
+    data = request.get_json()
+    rule = data['rule']
+    nonterminal = data['nonterminal']
+    app_rate = data['app_rate']
+    flask_grammar.modify_application_rate(grammar.NonterminalSymbol(nonterminal), rule, app_rate)
     return ""
 
-@app.route('/markup/addtag' , methods = ['GET', 'POST'])
+@app.route('/markup/addtag' , methods = ['POST'])
 def add_tag():
+    data = request.get_json()
+    markupSet = grammar.MarkupSet(data['markupSet'])
+    markup = grammar.Markup(data['tag'], markupSet)
+    flask_grammar.add_unused_markup(markup)
     return ""
 
-@app.route('/markup/addtagset' , methods = ['GET', 'POST'])
+@app.route('/markup/addtagset' , methods = ['POST'])
 def add_tagset():
+    data = request.get_json()
+    markupSet = grammar.MarkupSet(data["markupSet"])
+    flask_grammar.add_new_markup_set(markupSet)
     return ""
 
-@app.route('/markup/toggle' , methods = ['GET', 'POST'])
+@app.route('/markup/toggle' , methods = ['POST'])
 def toggle_tag():
+    data = request.get_json()
+    nonterminal = grammar.NonterminalSymbol(data["nonterminal"])
+    markupSet = grammar.MarkupSet(data['markupSet'])
+    markup = grammar.Markup(data['tag'], markupSet)
+    flask_grammar.toggle_markup(nonterminal, markup)
+
     return ""
 
 
 if __name__ == '__main__':
-    grammar = test
+    flask_grammar = test
     app.debug = debug
     app.run()
 
