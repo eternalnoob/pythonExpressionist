@@ -81,7 +81,7 @@ class Markup(object):
 
     def __eq__(self, other):
         if isinstance(other, Markup):
-            return self.tag == other.tag and self.tagset == other.tagset
+            return str(self.tag) == str(other.tag) and str(self.tagset) == str(other.tagset)
         else:
             return False
 
@@ -105,7 +105,7 @@ class MarkupSet(object):
 
     def __eq__(self, other):
         if isinstance(other, MarkupSet):
-            return self.tagset == other.tagset
+            return str(self.tagset) == str(other.tagset)
         else:
             return False
 
@@ -565,8 +565,11 @@ class PCFG(object):
             self.remove_markup(nonterminal, markup)
             print "removing markup"
         else:
-            print "adding markup"
-            self.add_markup(nonterminal, markup)
+            if str(nonterminal.tag) in self.nonterminals:
+                print "adding markup"
+                self.add_markup(nonterminal, markup)
+            else:
+                print('nonterminal not found!')
 
     def add_unused_markup(self, markup):
 
@@ -643,7 +646,7 @@ class PCFG(object):
             raise TypeError
         
 
-        return json.dumps(total, default=set_default, sort_keys=True)
+        return str(json.dumps(total, default=set_default, sort_keys=True))
             #create the nonterminal dictonary
 
 

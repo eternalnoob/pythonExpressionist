@@ -77,20 +77,25 @@ var Interface = React.createClass({
   handleNonterminalAdd: function() {
     
     console.log("add a new nonterminal")
-    var duplicate = 0
-    var arr_length = this.state.nonterminals.length
-    for ( var i = 0; i < arr_length; i++) {
-      if (this.state.nonterminals[i].name == name){
-      duplicate = 1
-      }
-    }
-    if(duplicate == 0)
+    var nonterminal = window.prompt("Please enter Nonterminal Name")
+    console.log(nonterminal)
+    if (this.state.nonterminals[nonterminal])
     {
-      //AJAX HERE
+      console.log("duplicate nonterminal!")
     }
     else
     {
-      console.log("Duplicate Nonterminal!")
+      var object = {"nonterminal": nonterminal
+                }
+      console.log(object)
+      jQuery.ajax({
+        url: '/nonterminal/add',
+        type: "POST",
+        contentType: "application/json",
+        data: JSON.stringify(object),
+        async: false,
+        cache: false
+        })
     }
   },
 
@@ -98,24 +103,22 @@ var Interface = React.createClass({
   handleMarkupClick: function(set, tag)
   {
     console.log("you are clicking "+ set +":"+tag)
-    if (this.state.current_nonterminal != -1)
+    if (this.state.current_nonterminal != "")
     {
-      //AJAX GOES HERE
-
-      /*
-        console.log("Active Nonterminal is "+ this.state.current_nonterminal)
-      var current=this.state.nonterminals[this.state.current_nonterminal]
-      var set_index = findIndex(current.markup, {'set': set} )
-      
-      if (set_index != -1)
-      {
-        var current_tags = current[set_index].tags
-      }
-      else
-      { var temp_mark = {'set': set, tags:[tag]}
-      }
-      */
-
+      var object = {"nonterminal": this.state.current_nonterminal,
+                "markupSet": set,
+                "tag": tag
+                }
+      console.log(object)
+      jQuery.ajax({
+        url: '/markup/toggle',
+        type: "POST",
+        contentType: "application/json",
+        data: JSON.stringify(object),
+        async: false,
+        cache: false
+        })
+      this.getInitialState()
     }
   },
 
@@ -123,6 +126,9 @@ var Interface = React.createClass({
   {
     jQuery.ajax({
       url:'/nonterminal/expand',
+      type:'POST',
+      contentType: "application/json",
+      data: JSON.stringify({"nonterminal": this.state.current_nonterminal}),
       dataType: 'json',
       async: true,
       cache:false,
@@ -136,20 +142,56 @@ var Interface = React.createClass({
       });
   },
 
-  handleSetDeep: function()
+  handleSetDeep: function(nonterminal)
   {
+    if (this.state.current_nonterminal != "")
+    {
+      var object = {"nonterminal": this.state.current_nonterminal,
+                }
+      console.log(object)
+      jQuery.ajax({
+        url: '/nonterminal/deep',
+        type: "POST",
+        contentType: "application/json",
+        data: JSON.stringify(object),
+        async: false,
+        cache: false
+        })
+      this.getInitialState
+    }
 
   },
   
   handleMarkupSetAdd: function()
   {
     console.log("You are adding a MarkupSet!")
-    //AJAX IT BOIII
+    var markupTag = window.prompt("Please enter MarkupSet")
+    var object = {"markupSet": markupTag}
+    console.log(object)
+    jQuery.ajax({
+      url: '/markup/addtagset',
+      type: "POST",
+      contentType: "application/json",
+      data: JSON.stringify(object),
+      async: false,
+      cache: false
+      })
   },
   handleMarkupAdd: function(set)
   {
     console.log("You are adding a single markup to set "+set)
-    //AJAXAROONI
+    var markupTag = window.prompt("Please enter Markup Tag")
+    var object = {"markupSet": set,
+                  "tag": markupTag}
+    console.log(object)
+    jQuery.ajax({
+      url: '/markup/addtag',
+      type: "POST",
+      contentType: "application/json",
+      data: JSON.stringify(object),
+      async: false,
+      cache: false
+      })
   },
   handleRuleClick: function(expansion)
   {
@@ -170,10 +212,44 @@ var Interface = React.createClass({
   handleRuleAdd: function()
   {
     //AJAX GOES HERE
+    console.log("add a new Rule")
+    var expansion = window.prompt("Please enter Rule expansion")
+    var app_rate = window.prompt("please enter application_rate")
+    var object = {"rule": expansion,
+                  "app_rate": app_rate,
+                  "nonterminal": this.state.current_nonterminal
+              }
+    console.log(object)
+    jQuery.ajax({
+      url: '/rule/add',
+      type: "POST",
+      contentType: "application/json",
+      data: JSON.stringify(object),
+      async: false,
+      cache: false
+      })
     console.log("adding a rule")
   },
 
-    
+  onRuleDelete: function(index)
+  {
+    var object = {"rule": this.state.current_rule,
+                  "nonterminal": this.state.current_nonterminal
+              }
+    console.log(object)
+    jQuery.ajax({
+      url: '/rule/delete',
+      type: "POST",
+      contentType: "application/json",
+      data: JSON.stringify(object),
+      async: false,
+      cache: false
+      })
+  },
+  onRuleChange: function()
+  {
+  },
+
   render: function() {
     var present_markups = []
     var def_rules = []
@@ -186,7 +262,7 @@ var Interface = React.createClass({
       if( this.state.current_rule != -1)
       {
         board =<RuleBoard expand = {this.handleExpand} name={this.state.current_nonterminal} expansion={def_rules[this.state.current_rule].expansion.join('')} 
-        app_rate={def_rules[this.state.current_rule].app_rate}/>
+        app_rate={def_rules[this.state.current_rule].app_rate} onDeleteRule={this.onRuleDelete} onChangeRule={this.onRuleChange}/>
       }
 
     }
