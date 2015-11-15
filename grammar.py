@@ -590,13 +590,26 @@ class PCFG(object):
         one thing I need to change is to output the set of markup in a nicer fashion
         """
         expansion = collections.Counter(sorted(self.monte_carlo_expand(nonterminal,samplesscalar)))
+        with open('output.tsv', 'a') as csvfile:
+            row_writer = csv.writer( csvfile, delimiter='\t', quotechar='|', quoting =
+                    csv.QUOTE_MINIMAL)
+            prob_range = 0
+            for deriv in expansion:
+                rng_interval = float(expansion[deriv])/sum(expansion.values())
+                rng_max = prob_range + rng_interval
+                temp_prob = [prob_range, rng_max]
+                row_writer.writerow( [nonterminal, str(deriv.expansion),  list(deriv.markup),
+                    [prob_range,rng_max]])
+                prob_range += rng_interval
+
+    def export_all(self):
         with open('output.tsv', 'w') as csvfile:
             row_writer = csv.writer( csvfile, delimiter='\t', quotechar='|', quoting =
                     csv.QUOTE_MINIMAL)
             row_writer.writerow( ['Deep Meaning', 'Expansion','Markup', 'Probability'] )
-            for deriv in expansion:
-                row_writer.writerow( [nonterminal, str(deriv.expansion),  deriv.markup,
-                    float(expansion[deriv])/sum(expansion.values())])
+        for nonterminal in self.nonterminals.itervalues():
+            if nonterminal.deep:
+                self.export(nonterminal)
 
 
 

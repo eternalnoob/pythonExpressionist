@@ -17,7 +17,7 @@ var Nonterminal = React.createClass({
       deep_glyph = <Glyphicon glyph="asterisk"/>
 
     return(
-          <ListGroupItem bsSize = "xsmall" bsStyle = {this.props.complete ? "success" : "danger" } onClick = {this.props.onClick}>{deep_glyph}   {this.props.name}</ListGroupItem>
+          <ListGroupItem bsSize = "xsmall" bsStyle = {this.props.complete ? "success" : "danger" } onClick = {this.props.onClick}>{deep_glyph}   [[{this.props.name}]]</ListGroupItem>
     );}
 
 

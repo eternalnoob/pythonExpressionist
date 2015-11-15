@@ -46,21 +46,29 @@ var Interface = React.createClass({
   },
 
   updateFromServer: function() {
-    console.log("test")
+
+    var a
     jQuery.ajax({
       url:'/default',
       dataType: 'json',
-      async: 'false',
+      async: false,
       cache:false,
       success: function(data) {
       console.log("we did it?")
       console.log(data)
-        return data
+        a = data
       }.bind(this),
       error: function(xhr, status, err) {
         console.error(this.props.url, status, err.toString());
       }.bind(this)
       });
+      var b=a['nonterminals']
+      var c=a['markups']
+      var d=a['system_vars']
+      this.setState({nonterminals: b})
+      this.setState({markups: c})
+      this.setState({system_vars: d})
+
   },
 
   //this handles the context switching (what nonterminal are we on)
@@ -78,24 +86,28 @@ var Interface = React.createClass({
     
     console.log("add a new nonterminal")
     var nonterminal = window.prompt("Please enter Nonterminal Name")
-    console.log(nonterminal)
-    if (this.state.nonterminals[nonterminal])
+    if ( nonterminal)
     {
-      console.log("duplicate nonterminal!")
-    }
-    else
-    {
-      var object = {"nonterminal": nonterminal
-                }
-      console.log(object)
-      jQuery.ajax({
-        url: '/nonterminal/add',
-        type: "POST",
-        contentType: "application/json",
-        data: JSON.stringify(object),
-        async: false,
-        cache: false
-        })
+      console.log(nonterminal)
+      if (this.state.nonterminals[nonterminal])
+      {
+        console.log("duplicate nonterminal!")
+      }
+      else
+      {
+        var object = {"nonterminal": nonterminal
+                  }
+        console.log(object)
+        jQuery.ajax({
+          url: '/nonterminal/add',
+          type: "POST",
+          contentType: "application/json",
+          data: JSON.stringify(object),
+          async: false,
+          cache: false
+          })
+          this.updateFromServer()
+      }
     }
   },
 
@@ -118,7 +130,7 @@ var Interface = React.createClass({
         async: false,
         cache: false
         })
-      this.getInitialState()
+        this.updateFromServer()
     }
   },
 
@@ -157,7 +169,7 @@ var Interface = React.createClass({
         async: false,
         cache: false
         })
-      this.getInitialState
+      this.updateFromServer()
     }
 
   },
@@ -176,6 +188,7 @@ var Interface = React.createClass({
       async: false,
       cache: false
       })
+      this.updateFromServer()
   },
   handleMarkupAdd: function(set)
   {
@@ -192,6 +205,7 @@ var Interface = React.createClass({
       async: false,
       cache: false
       })
+    this.updateFromServer()
   },
   handleRuleClick: function(expansion)
   {
@@ -229,6 +243,7 @@ var Interface = React.createClass({
       cache: false
       })
     console.log("adding a rule")
+    this.updateFromServer()
   },
 
   onRuleDelete: function(index)
@@ -245,6 +260,7 @@ var Interface = React.createClass({
       async: false,
       cache: false
       })
+    this.updateFromServer()
   },
   onRuleChange: function()
   {
