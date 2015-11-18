@@ -21,7 +21,7 @@ var FeedbackBar = React.createClass({
           })
     }
     return (
-      <div id="feedback" style = {{"height": "100%", "width": "100%"}}>
+      <div id="feedback" style = {{"height": "75%", "width": "100%"}}>
 
         <div id="Derivation" style = {{"border": "2px solid black", "float": "left", "height": "100%", "width": "60%", "overflow": "auto", "padding": "10px"}}>
           {derivation_str}

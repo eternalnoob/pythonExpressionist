@@ -262,7 +262,24 @@ var Interface = React.createClass({
       })
     this.updateFromServer()
   },
-  onRuleChange: function()
+
+  importReps: function()
+  {
+  },
+
+  loadGrammar: function()
+  {
+  },
+
+  saveGrammar: function()
+  {
+  },
+
+  exportList: function()
+  {
+  },
+
+  showSystemVars: function()
   {
   },
 
@@ -280,19 +297,21 @@ var Interface = React.createClass({
         board =<RuleBoard expand = {this.handleExpand} name={this.state.current_nonterminal} expansion={def_rules[this.state.current_rule].expansion.join('')} 
         app_rate={def_rules[this.state.current_rule].app_rate} onDeleteRule={this.onRuleDelete} onChangeRule={this.onRuleChange}/>
       }
-
     }
-        <NonterminalBoard expand = {this.handleExpand} setDeep = {this.handleSetDeep} name={this.state.current_nonterminal} nonterminal={this.state.nonterminals[this.state.current_nonterminal]} />
 
     return(
     <div style={{position: "fixed", top: 0, right: 0, "height": "100%", "width": "100%"}}>
-      <div style= {{"width": "75%", position: "absolute", top: 0, left: 0}}>
-        <HeaderBar/>
-        <MarkupBar onClickMarkup={this.handleMarkupClick} onAddMarkup={this.handleMarkupAdd} onAddMarkupSet={this.handleMarkupSetAdd} present = {present_markups} total={this.state.markups}/>
-        {board}
+      <div style= {{"height": "75%", "width": "75%", position: "absolute", top: 0, left: 0}}>
+        <div id = "upperbars" style={{"width":"100%","height":"25%"}}>
+          <HeaderBar systemVars = {this.state.system_vars}/>
+          <MarkupBar onClickMarkup={this.handleMarkupClick} onAddMarkup={this.handleMarkupAdd} onAddMarkupSet={this.handleMarkupSetAdd} present = {present_markups} total={this.state.markups}/>
+        </div>
+        <div id = "board" style={{"width":"100%", "height":"75%"}}>
+          {board}
+        </div>
       </div>
 
-      <div style= {{"maxWidth": "250px", "minWidth": "15%","height":"100%", position: "absolute", top: 0, right: 0}}>
+      <div style= {{"width": "25%", "height":"100%", position: "absolute", top: 0, right: 0}}>
           <NonterminalList nonterminals={this.state.nonterminals} onAddNonterminal={this.handleNonterminalAdd} onClickNonterminal={this.handleNonterminalClick}>Test</NonterminalList>
       </div>
 

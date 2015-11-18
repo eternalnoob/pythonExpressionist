@@ -9,6 +9,7 @@
   var ListGroupItem = require('react-bootstrap').ListGroupItem
   var Input = require('react-bootstrap').Input
   var Glyphicon = require('react-bootstrap').Glyphicon
+  var Infinite = require('react-infinite')
 
 
   var NonterminalList = React.createClass({
@@ -88,13 +89,12 @@
       var total = deep_inc.concat(incomplete.concat(deep_comp.concat(complete)))
 
 
-
-
       return(
-        <ListGroup style={{height: "100%"}}>
+      
+      <Infinite containerHeight={window.innerHeight} elementHeight={42}>
           {total}
           <ListGroupItem bsSize="xsmall" key ="ADDNEW" onClick={this.props.onAddNonterminal}><Glyphicon glyph="plus"/></ListGroupItem>
-        </ListGroup>
+      </Infinite>
       );
     }
   });

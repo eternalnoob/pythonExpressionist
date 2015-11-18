@@ -13,6 +13,13 @@ def index():
 def default():
     return flask_grammar.to_json()
 
+@app.route('/grammar/load', methods = ['POST'])
+def load_grammar():
+    data = request.get_json()
+    flask_grammar = grammar.from_json(str(data))
+    return flask_grammar.to_json()
+
+
 @app.route('/nonterminal/add' , methods = ['POST'])
 def add_nt():
     data = request.get_json()
@@ -93,6 +100,7 @@ def toggle_tag():
 
 @app.route('/export', methods =  ['POST'])
 def export_dir():
+    flask_grammar.export_all()
     return ""
 
 if __name__ == '__main__':
