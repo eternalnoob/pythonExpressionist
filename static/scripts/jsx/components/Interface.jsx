@@ -4,7 +4,7 @@ var React = require('react')
 var NonterminalList = require('./NonterminalList.jsx')
 var MarkupBar = require('./MarkupBar.jsx')
 var findIndex = require('lodash/array/findIndex')
-var jQuery = require('jquery')
+var ajax = require('jquery').ajax
 var RuleBar= require('./RuleBar.jsx')
 var NonterminalBoard = require('./NonterminalBoard.jsx')
 var RuleBoard = require('./RuleBoard.jsx')
@@ -17,7 +17,7 @@ var Interface = React.createClass({
   getInitialState: function() {
     console.log("test")
     var a
-    jQuery.ajax({
+    ajax({
       url:'/default',
       dataType: 'json',
       async: false,
@@ -48,7 +48,7 @@ var Interface = React.createClass({
   updateFromServer: function() {
 
     var a
-    jQuery.ajax({
+    ajax({
       url:'/default',
       dataType: 'json',
       async: false,
@@ -98,7 +98,7 @@ var Interface = React.createClass({
         var object = {"nonterminal": nonterminal
                   }
         console.log(object)
-        jQuery.ajax({
+        ajax({
           url: '/nonterminal/add',
           type: "POST",
           contentType: "application/json",
@@ -122,7 +122,7 @@ var Interface = React.createClass({
                 "tag": tag
                 }
       console.log(object)
-      jQuery.ajax({
+      ajax({
         url: '/markup/toggle',
         type: "POST",
         contentType: "application/json",
@@ -136,7 +136,7 @@ var Interface = React.createClass({
 
   handleExpand: function()
   {
-    jQuery.ajax({
+    ajax({
       url:'/nonterminal/expand',
       type:'POST',
       contentType: "application/json",
@@ -161,7 +161,7 @@ var Interface = React.createClass({
       var object = {"nonterminal": this.state.current_nonterminal,
                 }
       console.log(object)
-      jQuery.ajax({
+      ajax({
         url: '/nonterminal/deep',
         type: "POST",
         contentType: "application/json",
@@ -180,7 +180,7 @@ var Interface = React.createClass({
     var markupTag = window.prompt("Please enter MarkupSet")
     var object = {"markupSet": markupTag}
     console.log(object)
-    jQuery.ajax({
+    ajax({
       url: '/markup/addtagset',
       type: "POST",
       contentType: "application/json",
@@ -197,7 +197,7 @@ var Interface = React.createClass({
     var object = {"markupSet": set,
                   "tag": markupTag}
     console.log(object)
-    jQuery.ajax({
+    ajax({
       url: '/markup/addtag',
       type: "POST",
       contentType: "application/json",
@@ -234,7 +234,7 @@ var Interface = React.createClass({
                   "nonterminal": this.state.current_nonterminal
               }
     console.log(object)
-    jQuery.ajax({
+    ajax({
       url: '/rule/add',
       type: "POST",
       contentType: "application/json",
@@ -252,7 +252,7 @@ var Interface = React.createClass({
                   "nonterminal": this.state.current_nonterminal
               }
     console.log(object)
-    jQuery.ajax({
+    ajax({
       url: '/rule/delete',
       type: "POST",
       contentType: "application/json",
@@ -302,13 +302,9 @@ var Interface = React.createClass({
     return(
     <div style={{position: "fixed", top: 0, right: 0, "height": "100%", "width": "100%"}}>
       <div style= {{"height": "75%", "width": "75%", position: "absolute", top: 0, left: 0}}>
-        <div id = "upperbars" style={{"width":"100%","height":"25%"}}>
           <HeaderBar systemVars = {this.state.system_vars}/>
           <MarkupBar onClickMarkup={this.handleMarkupClick} onAddMarkup={this.handleMarkupAdd} onAddMarkupSet={this.handleMarkupSetAdd} present = {present_markups} total={this.state.markups}/>
-        </div>
-        <div id = "board" style={{"width":"100%", "height":"75%"}}>
           {board}
-        </div>
       </div>
 
       <div style= {{"width": "25%", "height":"100%", position: "absolute", top: 0, right: 0}}>

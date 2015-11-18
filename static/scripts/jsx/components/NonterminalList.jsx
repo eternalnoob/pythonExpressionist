@@ -5,9 +5,7 @@
 
   var React = require('react')
   var Nonterminal = require('./Nonterminal.jsx')
-  var ListGroup = require('react-bootstrap').ListGroup
   var ListGroupItem = require('react-bootstrap').ListGroupItem
-  var Input = require('react-bootstrap').Input
   var Glyphicon = require('react-bootstrap').Glyphicon
   var Infinite = require('react-infinite')
 
@@ -62,9 +60,9 @@
       for ( var i = 0; i < arr_length; i++ )
       {
         var current = this.props.nonterminals[NT_LIST[i]]
-        if(current.complete == false)
+        if(current.complete === false)
         {
-          if(current.deep == true)
+          if(current.deep === true)
           {
             deep_inc.push(<Nonterminal {...current} onClick={this.props.onClickNonterminal.bind(null, NT_LIST[i])} name={NT_LIST[i]} key={NT_LIST[i]}>{NT_LIST[i]}</Nonterminal>);
           }
@@ -76,7 +74,7 @@
         }
         else
         {
-          if(current.deep == true)
+          if(current.deep === true)
           {
             deep_comp.push(<Nonterminal {...current} onClick={this.props.onClickNonterminal.bind(null, NT_LIST[i])} name={NT_LIST[i]} key={NT_LIST[i]}>{NT_LIST[i]}</Nonterminal>);
           }

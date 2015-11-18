@@ -1,6 +1,5 @@
 {/* This is responsible for rendering the Rule Bar, which is attached directly to the Main interface*/}
 var React = require('react')
-var Rule = require('./Rule.jsx')
 var Button = require('react-bootstrap').Button
 var ButtonGroup = require('react-bootstrap').ButtonGroup
 

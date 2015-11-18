@@ -13,7 +13,7 @@ var Nonterminal = React.createClass({
 
   render: function() {
     var deep_glyph = ""
-    if (this.props.deep == true)
+    if (this.props.deep === true)
       deep_glyph = <Glyphicon glyph="asterisk"/>
     
     var button_title = "[[" + this.props.name + "]]"

@@ -2,7 +2,6 @@ var MarkupSet = require('./MarkupSet.jsx')
 var React = require('react')
 var ButtonGroup = require('react-bootstrap').ButtonGroup
 var Button = require('react-bootstrap').Button
-var chunk = require('lodash/array/chunk');
 var Glyphicon = require('react-bootstrap').Glyphicon
 
 var MarkupBar = React.createClass({

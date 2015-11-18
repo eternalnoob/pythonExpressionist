@@ -3,7 +3,6 @@
 var React = require('react')
 var Button = require('react-bootstrap').Button
 var Glyphicon = require('react-bootstrap').Glyphicon
-var Panel = require('react-bootstrap').Panel
 
 var RuleBoard = React.createClass({
   PropTypes: {
