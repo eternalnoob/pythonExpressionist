@@ -24,20 +24,12 @@ class IntermediateDeriv(object):
 
     def __eq__(self, other):
         if isinstance(other, IntermediateDeriv):
-            return self.__str__() == other.__str__()
+            return self.markup == other.markup and self.expansion == other.expansion
         else:
             return False
 
     def __str__(self):
         return self.expansion.__str__()+" MARKUP"+self.markup.__str__()
-
-    def to_json(self):
-
-        def set_default(obj):
-            if isinstance(obj, Markup):
-                return obj.__str__()
-
-        return json.dumps({"derivation": self.expansion.__str__(), "markup": list(self.markup)}, default=set_default)
 
     def __add__(self, other):
         return IntermediateDeriv(self.markup | other.markup, self.expansion + other.expansion)
@@ -81,7 +73,7 @@ class Markup(object):
 
     def __eq__(self, other):
         if isinstance(other, Markup):
-            return str(self.tag) == str(other.tag) and str(self.tagset) == str(other.tagset)
+            return self.tag == other.tag and self.tagset == other.tagset
         else:
             return False
 
@@ -90,7 +82,6 @@ class Markup(object):
 
     def __repr__(self):
         return self.__str__()
-
 
 
 class MarkupSet(object):
@@ -104,10 +95,7 @@ class MarkupSet(object):
         self.markups = set()
 
     def __eq__(self, other):
-        if isinstance(other, MarkupSet):
-            return str(self.tagset) == str(other.tagset)
-        else:
-            return False
+        return self.tagset == other.tagset and self.markups == other.markups
 
     def add_markup(self, markup):
         """
@@ -122,10 +110,8 @@ class MarkupSet(object):
         """
         if markup.tagset == self.tagset and markup in self.markups:
             self.markups.remove(markup)
-
     def __str__(self):
-        return self.tagset.__str__()
-
+        return self.tagset
     def __repr__(self):
         return self.__str__()
 
@@ -141,9 +127,8 @@ class NonterminalSymbol(object):
         self.markup = set()
         self.deep = deep
         self.complete = False
-        for markups in list(markup):
-            if markups not in list(self.markup):
-                self.markup.add(markups)
+        if markup:
+            self.markup.add(markup)
 
     def __eq__(self, other):
         if isinstance(other, NonterminalSymbol):
@@ -155,12 +140,8 @@ class NonterminalSymbol(object):
     def add_rule(self, derivation, application_rate=1):
         """Add a new production rule for this nonterminal symbol."""
         rule_object = Rule(symbol=self, derivation=derivation, application_rate=application_rate)
-        if rule_object not in self.rules:
-            self.rules.append(rule_object)
-            self._fit_probability_distribution()
-            return True
-        else:
-            return False
+        self.rules.append(rule_object)
+        self._fit_probability_distribution()
 
     def remove_rule(self, derivation):
         """remove a production rule for this nonterminal symbol."""
@@ -169,31 +150,17 @@ class NonterminalSymbol(object):
             self.rules.remove(rule_object)
             self._fit_probability_distribution()
 
-    def remove_by_index(self, index):
-        self.rules.remove(self.rules[index])
-        self._fit_probability_distribution()
-
-    def expand(self, markup):
+    def expand(self):
         """Expand this nonterminal symbol by probabilistically choosing a production rule."""
-        new_markup = markup | self.markup
         selected_rule = self._pick_a_production_rule()
-        return selected_rule.derive(new_markup)
-
-    def set_deep(self, truthy):
-        self.deep = truthy
+        return selected_rule.derive()
 
     def add_markup(self, markup):
         """
         adds markup to a given nonterminalSymbol
         """
-        if markup and markup not in list(self.markup):
+        if markup:
             self.markup.add(markup)
-
-    def remove_markup(self, markup):
-        for markup_tags in list(self.markup):
-            if markup == markup_tags:
-                self.markup.remove(markup_tags)
-
 
     def monte_carlo_expand(self, samplesscalar=1, markup=set()):
         """
@@ -302,7 +269,7 @@ class TerminalSymbol(object):
         else:
             return False
 
-    def expand(self, markup=set()):
+    def expand(self, markup):
         """Return this terminal symbol."""
         return IntermediateDeriv(self.markup | markup, self.representation)
 
@@ -329,23 +296,10 @@ class SystemVar(TerminalSymbol):
         TerminalSymbol.__init__(self, representation)
 
     def __str__(self):
-        return "[" + str(self.representation) + "]"
+        return "[" + self.representation + "]"
 
     def __repr__(self):
         return self.__str__()
-    
-    def __cmp__(self, other):
-        #ughhh
-        if isinstance(other, SystemVar):
-            if str(self) < str(other):  # compare name value (should be unique)
-                return -1
-            elif str(self) > str(other):
-                return 1
-            else:
-                return 0              # should mean it's the same instance
-        else:
-            return 0
-
 
     def expand(self, markup):
         """Return systemVar"""
@@ -383,9 +337,9 @@ class Rule(object):
         """
         self.application_rate = application_rate
 
-    def derive(self, markup=set()):
+    def derive(self):
         """Carry out the derivation specified for this rule."""
-        return sum((symbol.expand(markup=markup) for symbol in self.derivation))
+        return ''.join(symbol.expand() for symbol in self.derivation)
 
     def derivation_json(self):
         def stringify(x): return x.__str__()
@@ -465,18 +419,18 @@ class PCFG(object):
     """
 
     def __init__(self):
-        self.nonterminals = {}
+        self.nonterminals = []
         self.system_vars = []
-        self.markup_class = {}
+        self.markup_class = set()
 
     def add_nonterminal(self, nonterminal):
         """ add a nonterminal to our grammar"""
-        if not self.nonterminals.get(str(nonterminal.tag)):
-            self.nonterminals[str(nonterminal.tag)] = nonterminal
-        #this accomodates the recursive definition of nonterminals
-        for markups in list(nonterminal.markup):
-            self.add_markup(nonterminal, markups)
-            
+        if nonterminal not in self.nonterminals:
+            self.nonterminals.append(nonterminal)
+            for markups in nonterminal.markup:
+                if markups.tagset not in self.markup_class:
+                    self.markup_class.add(markups.tagset)
+
 
     def add_rule(self, nonterminal, derivation, application_rate=1):
         """
@@ -488,44 +442,47 @@ class PCFG(object):
         or else we end up with nonterminals that have the same tag but do not have the same
         productions associated with them
         """
-        nonterm_add = self.nonterminals.get(str(nonterminal.tag))
-        if nonterm_add:
-            new_derivation = []
-            for token in derivation:
-                if isinstance(token, NonterminalSymbol):
-                    if self.nonterminals.get(token.tag):
-                        new_derivation.append(self.nonterminals.get(token.tag))
-                    else:
-                        self.add_nonterminal(token)
-                        new_derivation.append(token)
-                elif isinstance(token, SystemVar) and token not in self.system_vars:
-                    self.system_vars.append(token)
-                    new_derivation.append(token)
+        nonterm_add = self.nonterminal(nonterminal)
+        new_derivation = []
+        for token in derivation:
+            if isinstance(token, NonterminalSymbol):
+                if any(token.tag == nt.tag for nt in self.nonterminals):
+                    new_derivation.append(self.nonterminal(token))
                 else:
+                    self.add_nonterminal(token)
                     new_derivation.append(token)
+            elif isinstance(token, SystemVar) and token not in self.system_vars:
+                self.system_vars.append(token)
+                new_derivation.append(token)
+            else:
+                new_derivation.append(token)
 
-            nonterm_add.add_rule(new_derivation, application_rate)
+        nonterm_add.add_rule(new_derivation, application_rate)
 
 
 
     def remove_rule(self, nonterminal, derivation):
         """remove a rule from a nonterminal"""
-        self.nonterminals.get(str(nonterminal.tag)).remove_rule(derivation)
-
-    def remove_rule_by_index(self, nonterminal, rule_index):
-        """ remove a rule from a nonterminal by its index"""
-        self.nonterminals.get(str(nonterminal.tag)).remove_by_index(rule_index)
+        self.nonterminal(nonterminal).remove_rule(derivation)
 
     def expand(self, nonterminal):
         """expand a given nonterminal"""
-        return self.nonterminals.get(str(nonterminal.tag)).expand(markup = set())
+        return self.nonterminal(nonterminal).expand()
 
+    def nonterminal(self, nonterminal):
+        """handles weirdness, this works kind of in the place of a dictionary which I will implement
+        when I have more time and sanity"""
+        for inner_nonterminal in self.nonterminals:
+            if nonterminal.tag == inner_nonterminal.tag:
+                return inner_nonterminal
 
-    def modify_application_rate(self, nonterminal, rule_index, application_rate):
+    def modify_application_rate(self, nonterminal, derivation, application_rate):
         """modify application_rate for the given nonterminal and derivation"""
-        rules = self.nonterminals.get(str(nonterminal.tag)).rules
-        rules[rule_index].modify_application_rate(application_rate)
-        self.nonterminals.get(str(nonterminal.tag))._fit_probability_distribution()
+        rules = self.nonterminal(nonterminal).rules
+        for rule in rules:
+            if rule.derivation == derivation:
+                rule.modify_application_rate(application_rate)
+                self.nonterminal(nonterminal)._fit_probability_distribution()
 
     def monte_carlo_expand(self, nonterminal, samplesscalar=1):
 
@@ -535,54 +492,16 @@ class PCFG(object):
         vary depending on if every possible production was sampled
         """
 
-        return self.nonterminals.get(str(nonterminal.tag)).monte_carlo_expand(samplesscalar)
-
-    def set_deep(self, nonterminal, truthy):
-        self.nonterminals[str(nonterminal.tag)].set_deep(truthy)
+        return self.nonterminal(nonterminal).monte_carlo_expand(samplesscalar)
 
     def add_markup(self, nonterminal, markup):
         """
         add markup to an existing nonterminal
         :type markup: Markup
         """
-        if self.nonterminals.get(str(nonterminal.tag)):
-            if not self.markup_class.get(str(markup.tagset)):
-                self.markup_class[str(markup.tagset)] = set()
-            self.markup_class[str(markup.tagset)].add(markup)
-            self.nonterminals.get(str(nonterminal.tag)).add_markup(markup)
-
-    def remove_markup(self, nonterminal, markup):
-        """
-        add markup to an existing nonterminal
-        :type markup: Markup
-        """
-        nonterminal = self.nonterminals.get(str(nonterminal.tag))
-        if nonterminal:
-            nonterminal.remove_markup(markup)
-
-    def toggle_markup(self, nonterminal, markup):
-        if markup in list(self.nonterminals.get(str(nonterminal.tag)).markup):
-            self.remove_markup(nonterminal, markup)
-            print "removing markup"
-        else:
-            if str(nonterminal.tag) in self.nonterminals:
-                print "adding markup"
-                self.add_markup(nonterminal, markup)
-            else:
-                print('nonterminal not found!')
-
-    def add_unused_markup(self, markup):
-
-        if not self.markup_class.get(str(markup.tagset)):
-            self.markup_class[str(markup.tagset)] = set()
-
-        self.markup_class[str(markup.tagset)].add(markup)
-        print self.markup_class
-
-    def add_new_markup_set(self, markupSet):
-
-        if not self.markup_class.get(str(markupSet.tagset)):
-            self.markup_class[str(markupSet.tagset)] = set()
+        if markup.tagset not in self.markup_class:
+            self.markup_class.add(markup.tagset)
+        self.nonterminal(nonterminal).add_markup(markup)
 
     def export(self, nonterminal, samplesscalar=1):
         """
@@ -590,26 +509,13 @@ class PCFG(object):
         one thing I need to change is to output the set of markup in a nicer fashion
         """
         expansion = collections.Counter(sorted(self.monte_carlo_expand(nonterminal,samplesscalar)))
-        with open('output.tsv', 'a') as csvfile:
-            row_writer = csv.writer( csvfile, delimiter='\t', quotechar='|', quoting =
-                    csv.QUOTE_MINIMAL)
-            prob_range = 0
-            for deriv in expansion:
-                rng_interval = float(expansion[deriv])/sum(expansion.values())
-                rng_max = prob_range + rng_interval
-                temp_prob = [prob_range, rng_max]
-                row_writer.writerow( [nonterminal, str(deriv.expansion),  list(deriv.markup),
-                    [prob_range,rng_max]])
-                prob_range += rng_interval
-
-    def export_all(self):
         with open('output.tsv', 'w') as csvfile:
             row_writer = csv.writer( csvfile, delimiter='\t', quotechar='|', quoting =
                     csv.QUOTE_MINIMAL)
             row_writer.writerow( ['Deep Meaning', 'Expansion','Markup', 'Probability'] )
-        for nonterminal in self.nonterminals.itervalues():
-            if nonterminal.deep:
-                self.export(nonterminal)
+            for deriv in expansion:
+                row_writer.writerow( [nonterminal, str(deriv.expansion),  deriv.markup,
+                    float(expansion[deriv])/sum(expansion.values())])
 
 
 
@@ -617,39 +523,29 @@ class PCFG(object):
         total = {}
         markups = collections.defaultdict(set)
         nonterminals = {}
-        for key, value in self.nonterminals.iteritems():
+        for nonterminal in self.nonterminals:
             temp = {}
-            if len(value.rules) != 0:
-                value.complete = True 
-            else:
-                value.complete = False
-            temp['deep'] = value.deep
-            temp['complete'] = value.complete
+            if nonterminal.rules:
+                nonterminal.complete = True 
+            temp['deep'] = nonterminal.deep
+            temp['complete'] = nonterminal.complete
             rules_list = []
-            for rules in value.rules:
+            for rules in nonterminal.rules:
                 rules_list.append({'expansion': rules.derivation_json(), 'app_rate': rules.application_rate})
             temp['rules'] = rules_list
 
             markup_dict = collections.defaultdict(set)
-            for markup in value.markup:
+            for markup in nonterminal.markup:
                 markup_dict[markup.tagset.__str__()] |= set([markup.tag])
                 markups[markup.tagset.__str__()] |= set([markup.tag])
 
             temp['markup'] = markup_dict
-            nonterminals[value.tag.__str__()] = temp
+            nonterminals[nonterminal.tag.__str__()] = temp
 
         total['nonterminals'] = nonterminals
 
-        total['markups'] = {}
-        for markupset in self.markup_class:
-            total['markups'][str(markupset)] = set()
-            for markups in self.markup_class[markupset]:
-                if total['markups'].get(str(markupset)):
-                    total['markups'][str(markupset)] |= set([markups.tag])
-                else:
-                    total['markups'][str(markupset)] = set([markups.tag])
-            
-        total['system_vars'] = sorted(self.system_vars)
+        total['markups'] = markups
+        total['system_vars'] = set(self.system_vars)
 
         def set_default(obj):
             if isinstance(obj, set):
@@ -657,44 +553,13 @@ class PCFG(object):
             if isinstance(obj, SystemVar):
                 return str(obj)
             raise TypeError
-        
 
-        return str(json.dumps(total, default=set_default, sort_keys=True))
+        return json.dumps(total, default=set_default)
             #create the nonterminal dictonary
 
 
 def from_json(json_in):
-
-    gram_res = PCFG()
-    dict_rep = json.loads(json_in)
-    nonterminals = dict_rep.get('nonterminals')
-    for tag, nonterminal in nonterminals.iteritems():
-        rules = nonterminal['rules']
-        markup = nonterminal['markup']
-        print markup
-
-        #translate UI markup rep into data markup rep
-        tmp_markups = []
-        for markup_set, tags in markup.iteritems():
-            tmp_set = MarkupSet(markup_set)
-            for i in tags:
-                new_mark = Markup(i, tmp_set)
-                tmp_markups.append(new_mark)
-
-
-
-        temp_nonterm = NonterminalSymbol(tag, markup = set(tmp_markups), deep=nonterminal['deep'])
-        gram_res.add_nonterminal(temp_nonterm)
-
-        for rule in rules:
-            #rule is an object
-            expansion = parse_rule(''.join(rule['expansion']))
-            application_rate = rule['app_rate']
-            gram_res.add_rule(temp_nonterm, expansion, application_rate)
-    for markupSet in dict_rep.get('markups'):
-        gram_res.add_new_markup_set(markupSet)
-
-    return gram_res
+    return "keep Dreaming"
 
 
 

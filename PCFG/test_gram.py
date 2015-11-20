@@ -1,7 +1,7 @@
-from grammar import NonterminalSymbol, parse_rule, TerminalSymbol, PCFG, MarkupSet, Markup, from_json
+from grammar import NonterminalSymbol, parse_rule, TerminalSymbol, PCFG, MarkupSet, Markup
 test = PCFG()
 
-ask_day = NonterminalSymbol('ask_day', deep = True)
+ask_day = NonterminalSymbol('ask_day')
 
 test.add_nonterminal(ask_day)
 ask_day_prod1 = parse_rule("[[greetings]] [[pleasantry]] [[ask]]")
@@ -40,7 +40,7 @@ test.add_rule(greetings, greetings_prod3, 3)
 
 test.add_rule(pleasantry, pleasantry_prod1, 4)
 test.add_rule(pleasantry, pleasantry_prod2, 2)
-test.add_rule(pleasantry, pleasantry_prod3, 3)
+test.add_rule(pleasantry, pleasantry_prod2, 3)
 
 test.add_rule(rude, rude_prod1, 8)
 test.add_rule(rude, rude_prod2, 10)
@@ -62,11 +62,9 @@ ask_markup = Markup("question", SPEECH_ACT)
 empty_markup = Markup("EMPTYQUESTION", SPEECH_ACT)
 
 test.add_markup(ask_day, ask_day_markup)
-
 test.add_markup(greetings, greetings_markup)
 test.add_markup(pleasantry, pleasantry_markup)
 test.add_markup(rude, rude_markup)
-
 test.add_markup(ask, ask_markup)
 test.add_markup(empty_expand, empty_markup)
 

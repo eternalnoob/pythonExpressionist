@@ -1,6 +1,6 @@
 """import unittest for running tests"""
 import unittest
-from grammar import NonterminalSymbol, Rule, parse_rule, PCFG, SystemVar, Markup, MarkupSet
+from grammar import NonterminalSymbol, Rule, parse_rule, PCFG, SystemVar, Markup, MarkupSet, IntermediateDeriv, TerminalSymbol
 
 class TestNonterminalEquivalency(unittest.TestCase):
     """
@@ -98,7 +98,7 @@ class TestPcfgOperations(unittest.TestCase):
         """
         nonterminal = NonterminalSymbol('a')
         self.test_gram.add_nonterminal(nonterminal)
-        test_nonterminals = [NonterminalSymbol('a')]
+        test_nonterminals = {'a': NonterminalSymbol('a')}
         self.assertEqual(self.test_gram.nonterminals, test_nonterminals)
 
     def test_add_rule(self):
@@ -109,7 +109,7 @@ class TestPcfgOperations(unittest.TestCase):
         test_derivation = [NonterminalSymbol('b'), "aaaaade"]
         self.test_gram.add_rule(self.nonterminal, test_derivation)
         test_rules = [Rule(self.nonterminal, test_derivation)]
-        self.assertEqual(self.test_gram.nonterminal(self.nonterminal).rules, test_rules)
+        self.assertEqual(self.test_gram.nonterminals.get(str(self.nonterminal.tag)).rules, test_rules)
 
     def test_remove_rule(self):
         """
@@ -118,7 +118,7 @@ class TestPcfgOperations(unittest.TestCase):
         self.test_gram.add_nonterminal(self.nonterminal)
         test_derivation = [NonterminalSymbol('b'), "aaaaade"]
         self.test_gram.remove_rule(self.nonterminal, test_derivation)
-        self.assertEqual(self.test_gram.nonterminal(self.nonterminal).rules, [])
+        self.assertEqual(self.test_gram.nonterminals.get(str(self.nonterminal.tag)).rules, [])
 
     def test_expansion(self):
         """
@@ -131,7 +131,9 @@ class TestPcfgOperations(unittest.TestCase):
         b_prod = parse_rule("Wow")
         self.test_gram.add_rule(a_prod[0], b_prod)
         test_string = "Wow, this is a test of expansion"
-        self.assertEqual(self.test_gram.expand(NonterminalSymbol('a')), test_string)
+        test_deriv = IntermediateDeriv(set(), TerminalSymbol("Wow, this is a test of expansion"))
+
+        self.assertEqual(self.test_gram.expand(NonterminalSymbol('a')), test_deriv)
 
     def test_recursive_nt_addition(self):
         """
@@ -150,7 +152,9 @@ class TestPcfgOperations(unittest.TestCase):
         """
         self.nonterminal.add_markup(self.markup)
         self.test_gram.add_nonterminal(self.nonterminal)
-        self.assertIn(self.markup.tagset, self.test_gram.markup_class)
+        test = set()
+        test.add(self.markup)
+        self.assertEqual(self.test_gram.markup_class[self.markup.tagset.__str__()], test)
 
     def test_expansion_returns_markup(self):
         """make sure our expansions return markup correctly"""
@@ -168,7 +172,7 @@ class TestPcfgOperations(unittest.TestCase):
         a_prod = parse_rule("[[b]], this is a test of expansion")
         self.test_gram.add_rule(self.nonterminal, a_prod)
         self.test_gram.add_nonterminal(a_prod[0])
-        test_string = ", this is a test of expansion"
+        test_string = IntermediateDeriv(set(),"[[b]], this is a test of expansion")
         self.assertEqual(self.test_gram.expand(NonterminalSymbol('a')), test_string)
 
 
@@ -179,9 +183,9 @@ class TestPcfgOperations(unittest.TestCase):
         self.test_gram.add_nonterminal(self.nonterminal)
         a_prob = parse_rule("test of application_rate")
         self.test_gram.add_rule(self.nonterminal, a_prob)
-        old_app = self.test_gram.nonterminal(self.nonterminal).rules[0].application_rate
+        old_app = self.test_gram.nonterminals.get(str(self.nonterminal.tag)).rules[0].application_rate
         self.test_gram.modify_application_rate(self.nonterminal, a_prob, 5)
-        new_app = self.test_gram.nonterminal(self.nonterminal).rules[0].application_rate
+        new_app = self.test_gram.nonterminals.get(str(self.nonterminal.tag)).rules[0].application_rate
         self.assertNotEqual(old_app, new_app)
         self.assertEqual(new_app, 5)
 
