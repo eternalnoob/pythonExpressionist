@@ -134,6 +134,18 @@ var Interface = React.createClass({
     }
   },
 
+  resetGrammar: function()
+  {
+    
+    ajax({
+      url:'/grammar/new',
+      type: 'GET',
+      async: false,
+      cache: false
+      });
+    this.updateFromServer()
+  },
+
   handleExpand: function()
   {
     ajax({
@@ -171,7 +183,6 @@ var Interface = React.createClass({
         })
       this.updateFromServer()
     }
-
   },
   
   handleMarkupSetAdd: function()
@@ -190,6 +201,7 @@ var Interface = React.createClass({
       })
       this.updateFromServer()
   },
+
   handleMarkupAdd: function(set)
   {
     console.log("You are adding a single markup to set "+set)
@@ -291,7 +303,8 @@ var Interface = React.createClass({
     {
       present_markups=this.state.nonterminals[this.state.current_nonterminal].markup
       def_rules = this.state.nonterminals[this.state.current_nonterminal].rules
-        board = <NonterminalBoard expand = {this.handleExpand} setDeep = {this.handleSetDeep} name={this.state.current_nonterminal} nonterminal={this.state.nonterminals[this.state.current_nonterminal]} />
+        board = <NonterminalBoard expand = {this.handleExpand} setDeep = {this.handleSetDeep}
+        name={this.state.current_nonterminal} nonterminal={this.state.nonterminals[this.state.current_nonterminal]} />
       if( this.state.current_rule != -1)
       {
         board =<RuleBoard expand = {this.handleExpand} name={this.state.current_nonterminal} expansion={def_rules[this.state.current_rule].expansion.join('')} 
@@ -302,8 +315,9 @@ var Interface = React.createClass({
     return(
     <div style={{position: "fixed", top: 0, right: 0, "height": "100%", "width": "100%"}}>
       <div style= {{"height": "75%", "width": "75%", position: "absolute", top: 0, left: 0}}>
-          <HeaderBar systemVars = {this.state.system_vars}/>
-          <MarkupBar onClickMarkup={this.handleMarkupClick} onAddMarkup={this.handleMarkupAdd} onAddMarkupSet={this.handleMarkupSetAdd} present = {present_markups} total={this.state.markups}/>
+          <HeaderBar reset={this.resetGrammar}  systemVars = {this.state.system_vars}/>
+          <MarkupBar onClickMarkup={this.handleMarkupClick} onAddMarkup={this.handleMarkupAdd}
+          onAddMarkupSet={this.handleMarkupSetAdd} present = {present_markups} total={this.state.markups}/>
           {board}
       </div>
 

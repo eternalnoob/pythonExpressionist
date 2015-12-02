@@ -30,12 +30,10 @@ var MarkupBar = React.createClass({
 
 
     return(
-    <div style = {{"overflow": "auto","height": "50%", "width": "100%"}}>
       <ButtonGroup>
         {output}
         <Button onClick = {this.props.onAddMarkupSet} key="addnew"><Glyphicon glyph="plus"/></Button>
       </ButtonGroup>
-    </div>
     )
     }
 });
