@@ -10,7 +10,7 @@ var RuleBoard = React.createClass({
   expansion: React.PropTypes.string,
   app_rate: React.PropTypes.number,
   onChangeRule: React.PropTypes.func,
-  onDeleteRule: React.PropTypes.func
+  onDeleteRule: React.PropTypes.func,
   },
   
   render: function() {

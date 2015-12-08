@@ -20,9 +20,13 @@ we don't have nonlocal keywords. Make sure we modify our copy instead of make a 
 
 @app.route('/grammar/load', methods = ['POST'])
 def load_grammar():
-    data = request.get_json()
+    print request.data
     global flask_grammar
-    flask_grammar = grammar.from_json(str(data))
+    flask_grammar = grammar.from_json(str(request.data))
+    return flask_grammar.to_json()
+
+@app.route('/grammar/save', methods = ['POST'])
+def save_grammar():
     return flask_grammar.to_json()
 
 @app.route('/grammar/new', methods = ['GET'])
@@ -77,7 +81,7 @@ def set_app():
     data = request.get_json()
     rule = data['rule']
     nonterminal = data['nonterminal']
-    app_rate = data['app_rate']
+    app_rate = int(data['app_rate'])
     flask_grammar.modify_application_rate(grammar.NonterminalSymbol(nonterminal), rule, app_rate)
     return flask_grammar.to_json()
 
@@ -112,7 +116,7 @@ def toggle_tag():
 @app.route('/export', methods =  ['POST'])
 def export_dir():
     flask_grammar.export_all()
-    return ""
+    return "exported grammars"
 
 if __name__ == '__main__':
     global flask_grammar

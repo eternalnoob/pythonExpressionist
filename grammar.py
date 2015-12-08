@@ -692,7 +692,7 @@ def from_json(json_in):
             application_rate = rule['app_rate']
             gram_res.add_rule(temp_nonterm, expansion, application_rate)
     for markupSet in dict_rep.get('markups'):
-        gram_res.add_new_markup_set(markupSet)
+        gram_res.add_new_markup_set(MarkupSet(markupSet))
 
     return gram_res
 

@@ -23,8 +23,6 @@ var Interface = React.createClass({
       async: false,
       cache:false,
       success: function(data) {
-      console.log("we did it?")
-      console.log(data)
         a = data
       }.bind(this),
       error: function(xhr, status, err) {
@@ -54,8 +52,6 @@ var Interface = React.createClass({
       async: false,
       cache:false,
       success: function(data) {
-      console.log("we did it?")
-      console.log(data)
         a = data
       }.bind(this),
       error: function(xhr, status, err) {
@@ -219,6 +215,7 @@ var Interface = React.createClass({
       })
     this.updateFromServer()
   },
+
   handleRuleClick: function(expansion)
   {
     console.log("we're trying it")
@@ -272,7 +269,27 @@ var Interface = React.createClass({
       async: false,
       cache: false
       })
+    //forceUpdate()
+    this.state.current_rule -= 1
     this.updateFromServer()
+  },
+
+  handleAppModify: function()
+  {
+    var index = this.state.current_rule
+    console.log("modifying application rate")
+    var app_rate = window.prompt("Please enter new application rate")
+        var object = {"rule": index, "nonterminal": this.state.current_nonterminal, "app_rate": app_rate}
+        console.log(object)
+        ajax({
+          url: '/rule/set_app',
+          type: "POST",
+          contentType: "application/json",
+          data: JSON.stringify(object),
+          async: false,
+          cache: false
+          })
+          this.updateFromServer()
   },
 
   importReps: function()
@@ -291,10 +308,6 @@ var Interface = React.createClass({
   {
   },
 
-  showSystemVars: function()
-  {
-  },
-
   render: function() {
     var present_markups = []
     var def_rules = []
@@ -307,7 +320,8 @@ var Interface = React.createClass({
         name={this.state.current_nonterminal} nonterminal={this.state.nonterminals[this.state.current_nonterminal]} />
       if( this.state.current_rule != -1)
       {
-        board =<RuleBoard expand = {this.handleExpand} name={this.state.current_nonterminal} expansion={def_rules[this.state.current_rule].expansion.join('')} 
+        board =<RuleBoard expand = {this.handleExpand} name={this.state.current_nonterminal} 
+        onAppChange={this.handleAppModify} expansion={def_rules[this.state.current_rule].expansion.join('')} 
         app_rate={def_rules[this.state.current_rule].app_rate} onDeleteRule={this.onRuleDelete} onChangeRule={this.onRuleChange}/>
       }
     }
