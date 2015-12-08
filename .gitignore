@@ -2,7 +2,6 @@
 node_modules
 *.swp
 *.pyc
-static/scripts/build/bundle.js
 static/scripts/js/bootstrap
 static/scripts/css/
 __pycache__
