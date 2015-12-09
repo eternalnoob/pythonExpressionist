@@ -79,7 +79,7 @@ def set_deep():
 @app.route('/nonterminal/expand', methods=['POST', 'GET'])
 def expand_nt():
     data = request.get_json()
-    return test.expand(grammar.NonterminalSymbol(data['nonterminal'])).to_json()
+    return flask_grammar.expand(grammar.NonterminalSymbol(data['nonterminal'])).to_json()
 
 @app.route('/rule/add', methods=['POST'])
 def add_rule():
