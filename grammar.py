@@ -584,13 +584,13 @@ class PCFG(object):
         if not self.markup_class.get(str(markupSet.tagset)):
             self.markup_class[str(markupSet.tagset)] = set()
 
-    def export(self, nonterminal, samplesscalar=1):
+    def export(self, nonterminal, filename, samplesscalar=1,):
         """
         returns a tab seperated value list of productions, duplicates removed.
         one thing I need to change is to output the set of markup in a nicer fashion
         """
         expansion = collections.Counter(sorted(self.monte_carlo_expand(nonterminal,samplesscalar)))
-        with open('output.tsv', 'a') as csvfile:
+        with open(filename, 'a') as csvfile:
             row_writer = csv.writer( csvfile, delimiter='\t', quotechar='|', quoting =
                     csv.QUOTE_MINIMAL)
             prob_range = 0
@@ -602,14 +602,14 @@ class PCFG(object):
                     [prob_range,rng_max]])
                 prob_range += rng_interval
 
-    def export_all(self):
-        with open('output.tsv', 'w') as csvfile:
+    def export_all(self, filename):
+        with open(filename, 'w') as csvfile:
             row_writer = csv.writer( csvfile, delimiter='\t', quotechar='|', quoting =
                     csv.QUOTE_MINIMAL)
             row_writer.writerow( ['Deep Meaning', 'Expansion','Markup', 'Probability'] )
         for nonterminal in self.nonterminals.itervalues():
             if nonterminal.deep:
-                self.export(nonterminal)
+                self.export(nonterminal, filename)
 
 
 

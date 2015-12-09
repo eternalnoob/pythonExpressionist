@@ -14,6 +14,7 @@ var HeaderBar = require('./HeaderBar.jsx')
 
 var Interface = React.createClass({
 
+  //load data from server, use default grammar
   getInitialState: function() {
     console.log("test")
     var a
@@ -43,8 +44,8 @@ var Interface = React.createClass({
     }
   },
 
+  //update state from server
   updateFromServer: function() {
-
     var a
     ajax({
       url:'/default',
@@ -294,18 +295,56 @@ var Interface = React.createClass({
 
   importReps: function()
   {
+
   },
 
   loadGrammar: function()
   {
+    var filename = window.prompt("Enter the Name of the Grammar you wish to load")
+    ajax({
+      url: 'grammar/from_file',
+      type: "POST",
+      contentType: "text/plain",
+      data: filename,
+      async: false,
+      cache: false
+      })
+  this.updateFromServer()
+  
+
   },
 
   saveGrammar: function()
   {
+    
+    var filename = window.prompt("Enter the Name of file you wish to Save Grammar to")
+    if ( filename != "" )
+    {
+      ajax({
+        url: 'grammar/save',
+        type: "POST",
+        contentType: "text/plain",
+        data: filename,
+        async: true,
+        cache: false
+      })
+    }
   },
 
   exportList: function()
   {
+    var filename = window.prompt("Enter the Name of file you wish to export to")
+    if ( filename != "" )
+    {
+      ajax({
+        url: 'grammar/export',
+        type: "POST",
+        contentType: "text/plain",
+        data: filename,
+        async: true,
+        cache: false
+      })
+    }
   },
 
   render: function() {
@@ -316,6 +355,7 @@ var Interface = React.createClass({
     {
       present_markups=this.state.nonterminals[this.state.current_nonterminal].markup
       def_rules = this.state.nonterminals[this.state.current_nonterminal].rules
+      //check which board we need to render
         board = <NonterminalBoard expand = {this.handleExpand} setDeep = {this.handleSetDeep}
         name={this.state.current_nonterminal} nonterminal={this.state.nonterminals[this.state.current_nonterminal]} />
       if( this.state.current_rule != -1)
@@ -329,7 +369,8 @@ var Interface = React.createClass({
     return(
     <div style={{position: "fixed", top: 0, right: 0, "height": "100%", "width": "100%"}}>
       <div style= {{"height": "75%", "width": "75%", position: "absolute", top: 0, left: 0}}>
-          <HeaderBar reset={this.resetGrammar}  systemVars = {this.state.system_vars}/>
+        <HeaderBar reset={this.resetGrammar} loadGrammar={this.loadGrammar}
+          exportList = {this.exportList} saveGrammar = {this.saveGrammar} systemVars = {this.state.system_vars}/>
           <MarkupBar onClickMarkup={this.handleMarkupClick} onAddMarkup={this.handleMarkupAdd}
           onAddMarkupSet={this.handleMarkupSetAdd} present = {present_markups} total={this.state.markups}/>
           {board}

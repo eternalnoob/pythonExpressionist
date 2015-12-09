@@ -15,6 +15,12 @@ var RuleBar = React.createClass({
     onRuleAdd: React.PropTypes.func
   },
 
+  previousRules() {
+  },
+
+  nextRules() {
+  },
+
   render:function() {
     var rules = []
     this.props.rules.forEach(function(rule, i){
@@ -23,7 +29,7 @@ var RuleBar = React.createClass({
       rules.push(<Button onClick = {this.props.onRuleClick.bind(null, rule.expansion)}  title = {rule.expansion.join('')} key={rule.expansion.join('') + this.props.name}>{shortened}</Button>);
       },this)
     return(
-      <div style = { {"overflow": "auto", "width": "100%", "height": "25%"} }>
+      <div>
           <ButtonGroup>
           <Button onClick={this.props.onRuleAdd} title="Add new Rule" key="addnew" >Add a Rule!</Button>
           {rules}

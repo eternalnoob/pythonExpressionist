@@ -70,7 +70,6 @@ test.add_markup(rude, rude_markup)
 test.add_markup(ask, ask_markup)
 test.add_markup(empty_expand, empty_markup)
 
-
 """
 now let's do a simpler grammar
 """

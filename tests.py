@@ -184,7 +184,7 @@ class TestPcfgOperations(unittest.TestCase):
         a_prob = parse_rule("test of application_rate")
         self.test_gram.add_rule(self.nonterminal, a_prob)
         old_app = self.test_gram.nonterminals.get(str(self.nonterminal.tag)).rules[0].application_rate
-        self.test_gram.modify_application_rate(self.nonterminal, a_prob, 5)
+        self.test_gram.modify_application_rate(self.nonterminal, 0, 5)
         new_app = self.test_gram.nonterminals.get(str(self.nonterminal.tag)).rules[0].application_rate
         self.assertNotEqual(old_app, new_app)
         self.assertEqual(new_app, 5)
@@ -206,6 +206,7 @@ class TestPcfgOperations(unittest.TestCase):
         test_system_vars.append(SystemVar("hair_color"))
         test_system_vars.append(SystemVar("player_name"))
         self.assertEqual(test_system_vars, self.test_gram.system_vars)
+
 
 if __name__ == '__main__':
     unittest.main()
