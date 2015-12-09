@@ -3,5 +3,5 @@ node_modules
 *.swp
 *.pyc
 static/scripts/js/bootstrap
-static/scripts/css/
+static/scripts/css/*
 __pycache__
