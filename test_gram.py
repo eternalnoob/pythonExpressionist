@@ -73,20 +73,3 @@ test.add_markup(empty_expand, empty_markup)
 """
 now let's do a simpler grammar
 """
-
-
-simple = PCFG()
-
-a=NonterminalSymbol('a')
-b=NonterminalSymbol('b')
-c=NonterminalSymbol('c')
-simple.add_nonterminal(a)
-simple.add_nonterminal(b)
-simple.add_nonterminal(c)
-simple.add_rule(a, [b,c])
-simple.add_rule(a, [c,b])
-simple.add_rule(c, parse_rule("c1"))
-simple.add_rule(c, parse_rule("c2"))
-simple.add_rule(b, parse_rule("b1"))
-simple.add_rule(b, parse_rule("b2"))
-

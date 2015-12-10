@@ -8,6 +8,7 @@ import itertools
 import collections
 import csv
 import json
+from IPython import embed
 
 class IntermediateDeriv(object):
     """
@@ -139,8 +140,10 @@ class MarkupSet(object):
 class NonterminalSymbol(object):
     """A non-terminal symbol in a grammar."""
 
-    def __init__(self, tag, markup=set(), deep=False):
+    def __init__(self, tag, markup=None, deep=False):
         """Initialize a NonterminalSymbol object."""
+        if markup is None:
+            markup = set()
         self.tag = tag
         self.rules = []  # Unordered list of rule objects
         self.rules_probability_distribution = {}
@@ -187,7 +190,10 @@ class NonterminalSymbol(object):
         self.rules.remove(self.rules[index])
         self._fit_probability_distribution()
 
-    def expand(self, markup = set() ):
+    def expand(self, markup=None):
+        if markup is None:
+            markup = set()
+        
         """Expand this nonterminal symbol by probabilistically choosing a production rule."""
         new_markup = markup | self.markup
         selected_rule = self._pick_a_production_rule()
@@ -209,7 +215,9 @@ class NonterminalSymbol(object):
                 self.markup.remove(markup_tags)
 
 
-    def monte_carlo_expand(self, samplesscalar=1, markup=set()):
+    def monte_carlo_expand(self, samplesscalar=1, markup=None):
+        if markup is None:
+            markup = set()
         """
         probabilistically expand our nonterminal
         samplesScalar*n times, where n is the number of productions rules
@@ -316,8 +324,10 @@ class TerminalSymbol(object):
         else:
             return False
 
-    def expand(self, markup=set()):
+    def expand(self, markup=None):
         """Return this terminal symbol."""
+        if markup is None:
+            markup = set()
         return IntermediateDeriv(self.markup | markup, self.representation)
 
     def monte_carlo_expand(self, markup):
@@ -372,7 +382,7 @@ class SystemVar(TerminalSymbol):
 class Rule(object):
     """A production rule in a grammar."""
 
-    def __init__(self, symbol, derivation, application_rate=1):
+    def __init__(self, symbol, derivation, application_rate=1, markup = None):
         """Initialize a Rule object.
         :param symbol: Nonterminal symbol(lhs) for this rule
         :type symbol: NonterminalSymbol
@@ -380,11 +390,13 @@ class Rule(object):
         :type derivation: list()
         :param application_rate: application_rate(probability) for this rule
         """
+        if markup is None:
+            markup = set()
         self.symbol = symbol # NonterminalSymbol that is lhs of rule
         self.derivation = derivation  # An ordered list of nonterminal and terminal symbols
         self.application_rate = application_rate
         #specific rules can have markup to represent variation within nonterminal that does not warrant a new nonterminal
-        self.markup = set()
+        self.markup = markup
 
 
     def __eq__(self, other):
@@ -400,8 +412,10 @@ class Rule(object):
         """
         self.application_rate = application_rate
 
-    def derive(self, markup=set()):
+    def derive(self, markup=None):
         """Carry out the derivation specified for this rule."""
+        if markup is None:
+            markup = set()
         return (sum(symbol.expand(markup=markup) for symbol in self.derivation)) + self.markup
 
     def derivation_json(self):
@@ -448,8 +462,12 @@ class Rule(object):
         return self.__str__()
 
     def add_markup(self, markup):
-        self.markup.add(markup)
+        if markup not in self.markup:
+            self.markup.add(markup)
 
+    def remove_markup(self, markup):
+        if markup in self.markup:
+            self.markup.remove(markup)
 
 def parse_rule(rule_string):
     """
@@ -496,7 +514,6 @@ class PCFG(object):
         #this accomodates the recursive definition of nonterminals
         for markups in list(nonterminal.markup):
             self.add_markup(nonterminal, markups)
-            
 
     def add_rule(self, nonterminal, derivation, application_rate=1):
         """
@@ -525,8 +542,6 @@ class PCFG(object):
                     new_derivation.append(token)
 
             nonterm_add.add_rule(new_derivation, application_rate)
-
-
 
     def remove_rule(self, nonterminal, derivation):
         """remove a rule from a nonterminal"""
@@ -575,13 +590,16 @@ class PCFG(object):
         """
         add a markup to a specific rule in a nonterminal
         will add it to the PCFG's markup_class as well
+        nonterminal is the nonterminal we are going to change,
+        rule holds the index of the rule we are changing
+        markup holds the markup we are adding
         """
-        if self.nonterminals.get(str(nonterminal.tag)):
-            if self.nonterminals.get(str(nonterminal.tag)).rules[rule]:
-                if not self.markup_class.get(str(markup.tagset)):
-                    self.markup_class[str(markup.tagset)] = set()
-            self.markup_class[str(markup.tagset)].add(markup)
-            self.nonterminals.get(str(nonterminal.tag)).rules[rule].add_markup(markup)
+        self.add_unused_markup(markup)
+        self.nonterminals.get(str(nonterminal.tag)).rules[rule].add_markup(markup)
+
+    def remove_rule_markup(self, nonterminal, rule, markup):
+        self.nonterminals.get(str(nonterminal.tag)).rules[rule].add_markup(markup)
+    
 
     def remove_markup(self, nonterminal, markup):
         """
@@ -609,7 +627,6 @@ class PCFG(object):
             self.markup_class[str(markup.tagset)] = set()
 
         self.markup_class[str(markup.tagset)].add(markup)
-        print self.markup_class
 
     def add_new_markup_set(self, markupSet):
 
@@ -646,8 +663,11 @@ class PCFG(object):
 
 
     def to_json(self):
+        #total represents our final dictionary we will conver to JSON
         total = {}
+        #use defaultdict as it allows us to assume they are sets
         markups = collections.defaultdict(set)
+        #nonterminals are their own dictionaries
         nonterminals = {}
         for key, value in self.nonterminals.iteritems():
             temp = {}
@@ -659,7 +679,14 @@ class PCFG(object):
             temp['complete'] = value.complete
             rules_list = []
             for rules in value.rules:
-                rules_list.append({'expansion': rules.derivation_json(), 'app_rate': rules.application_rate})
+                rule_mu_dict = collections.defaultdict(set)
+
+                #createJSON representation for individual rule markup
+                for markup in rules.markup:
+                    rule_mu_dict[markup.tagset.__str__()] |= set([markup.tag])
+                    markups[markup.tagset.__str__()] |= set([markup.tag])
+
+                rules_list.append({'expansion': rules.derivation_json(), 'app_rate': rules.application_rate, 'markup': rule_mu_dict})
             temp['rules'] = rules_list
 
             markup_dict = collections.defaultdict(set)
@@ -691,7 +718,7 @@ class PCFG(object):
             raise TypeError
         
 
-        return str(json.dumps(total, default=set_default, sort_keys=True))
+        return json.dumps(total, default=set_default, sort_keys=True)
             #create the nonterminal dictonary
 
 
@@ -718,11 +745,21 @@ def from_json(json_in):
         temp_nonterm = NonterminalSymbol(tag, markup = set(tmp_markups), deep=nonterminal['deep'])
         gram_res.add_nonterminal(temp_nonterm)
 
-        for rule in rules:
+        for ruleindex, rule in enumerate(rules):
             #rule is an object
             expansion = parse_rule(''.join(rule['expansion']))
             application_rate = rule['app_rate']
+            markup = rule['markup']
+            tmp_markups = []
+            for markup_set, tags in markup.iteritems():
+                tmp_set = MarkupSet(markup_set)
+                for i in tags:
+                    new_mark = Markup(i, tmp_set)
+                    tmp_markups.append(new_mark)
+
             gram_res.add_rule(temp_nonterm, expansion, application_rate)
+            for markups in tmp_markups:
+                gram_res.add_rule_markup(temp_nonterm, ruleindex, markups)
     for markupSet in dict_rep.get('markups'):
         gram_res.add_new_markup_set(MarkupSet(markupSet))
 
