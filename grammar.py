@@ -396,10 +396,7 @@ class Rule(object):
         self.derivation = derivation  # An ordered list of nonterminal and terminal symbols
         self.application_rate = application_rate
         #specific rules can have markup to represent variation within nonterminal that does not warrant a new nonterminal
-        self.markup = set()
-        for markups in list(markup):
-            if markups not in list(self.markup):
-                self.markup.add(markups)
+        self.markup = markup
 
 
     def __eq__(self, other):
@@ -469,18 +466,13 @@ class Rule(object):
         if markup not in list(self.markup):
             self.markup.add(markup)
 
+
     def remove_markup(self, markup):
-        print("removing markup")
+        #this is pretty gross
         if markup in list(self.markup):
-            #this is really gross, I think it has to do with
-            #how we hash things in python.
-            print markup
-            print self.markup
-            self.markup = list(self.markup).remove(markup)
-            if not self.markup:
-                self.markup = set()
-            else:
-                self.markup = set(self.markup)
+            a = list(self.markup)
+            a.remove(markup)
+            self.markup = set(a)
 
 def parse_rule(rule_string):
     """
@@ -618,8 +610,10 @@ class PCFG(object):
 
     def toggle_rule_markup(self, nonterminal, rule, markup):
         if markup in list(self.nonterminals.get(str(nonterminal.tag)).rules[rule].markup):
+            print("removing rule markup")
             self.remove_rule_markup( nonterminal, rule, markup)
         else:
+            print("adding rule markup")
             self.add_rule_markup( nonterminal, rule, markup)
 
     def remove_markup(self, nonterminal, markup):

@@ -5,4 +5,7 @@ node_modules
 static/scripts/js/bootstrap
 static/scripts/jsx
 static/scripts/css/
+grammars/load/*
+grammars/save/*
+grammars/exports/*
 __pycache__
