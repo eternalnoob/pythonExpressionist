@@ -40,7 +40,13 @@ class IntermediateDeriv(object):
         return json.dumps({"derivation": self.expansion.__str__(), "markup": list(self.markup)}, default=set_default)
 
     def __add__(self, other):
-        return IntermediateDeriv(self.markup | other.markup, self.expansion + other.expansion)
+        #if adding two derivations together, add them
+        if isinstance( other, IntermediateDeriv):
+        
+            return IntermediateDeriv(self.markup | other.markup, self.expansion + other.expansion)
+        #if adding markup to a derivation, only add markup, preserve expansion
+        else:
+            return IntermediateDeriv(self.markup | other, self.expansion) 
 
     def __lt__(self, other):
         return self.expansion < other.expansion
@@ -162,6 +168,14 @@ class NonterminalSymbol(object):
         else:
             return False
 
+    def add_rule_object(self, rule_object):
+        if rule_object not in self.rules:
+            self.rules.append(rule_object)
+            self._fit_probability_distribution()
+            return True
+        else:
+            return False
+
     def remove_rule(self, derivation):
         """remove a production rule for this nonterminal symbol."""
         rule_object = Rule(symbol=self, derivation=derivation)
@@ -173,7 +187,7 @@ class NonterminalSymbol(object):
         self.rules.remove(self.rules[index])
         self._fit_probability_distribution()
 
-    def expand(self, markup):
+    def expand(self, markup = set() ):
         """Expand this nonterminal symbol by probabilistically choosing a production rule."""
         new_markup = markup | self.markup
         selected_rule = self._pick_a_production_rule()
@@ -369,6 +383,9 @@ class Rule(object):
         self.symbol = symbol # NonterminalSymbol that is lhs of rule
         self.derivation = derivation  # An ordered list of nonterminal and terminal symbols
         self.application_rate = application_rate
+        #specific rules can have markup to represent variation within nonterminal that does not warrant a new nonterminal
+        self.markup = set()
+
 
     def __eq__(self, other):
         #equality does not consider application_rate
@@ -385,7 +402,7 @@ class Rule(object):
 
     def derive(self, markup=set()):
         """Carry out the derivation specified for this rule."""
-        return sum((symbol.expand(markup=markup) for symbol in self.derivation))
+        return (sum(symbol.expand(markup=markup) for symbol in self.derivation)) + self.markup
 
     def derivation_json(self):
         def stringify(x): return x.__str__()
@@ -407,7 +424,6 @@ class Rule(object):
                 toadd.append(symbol.monte_carlo_expand(markup))
                 ret_list.append(toadd)
 
-        #nothing from here on to end of funct
         #ret list should be a list of lists
         #either TerminalSymbols or Nonterminals Symbols
         #take this and construct a list of TerminalSymbols and singleNonterminalSymbols
@@ -419,7 +435,7 @@ class Rule(object):
 
         final = []
         for values in ret_list:
-            final.append(sum(values))
+            final.append(sum(values)+self.markup)
 
         #at this point, ret list should be a list of the Intermediate derivations
         #ret_list = list(itertools.chain.from_iterable(ret_list))
@@ -430,6 +446,10 @@ class Rule(object):
 
     def __repr__(self):
         return self.__str__()
+
+    def add_markup(self, markup):
+        self.markup.add(markup)
+
 
 def parse_rule(rule_string):
     """
