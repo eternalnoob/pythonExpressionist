@@ -571,6 +571,18 @@ class PCFG(object):
             self.markup_class[str(markup.tagset)].add(markup)
             self.nonterminals.get(str(nonterminal.tag)).add_markup(markup)
 
+    def add_rule_markup(self, nonterminal, rule, markup):
+        """
+        add a markup to a specific rule in a nonterminal
+        will add it to the PCFG's markup_class as well
+        """
+        if self.nonterminals.get(str(nonterminal.tag)):
+            if self.nonterminals.get(str(nonterminal.tag)).rules[rule]:
+                if not self.markup_class.get(str(markup.tagset)):
+                    self.markup_class[str(markup.tagset)] = set()
+            self.markup_class[str(markup.tagset)].add(markup)
+            self.nonterminals.get(str(nonterminal.tag)).rules[rule].add_markup(markup)
+
     def remove_markup(self, nonterminal, markup):
         """
         add markup to an existing nonterminal
