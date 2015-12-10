@@ -130,15 +130,13 @@ def toggle_tag():
     nonterminal = grammar.NonterminalSymbol(data["nonterminal"])
     markupSet = grammar.MarkupSet(data['markupSet'])
     markup = grammar.Markup(data['tag'], markupSet)
-
-    flask_grammar.toggle_markup(nonterminal, markup)
+    rule = int(data['rule'])
+    if rule != -1:
+        flask_grammar.toggle_rule_markup(nonterminal, rule, markup)
+    else:
+        flask_grammar.toggle_markup(nonterminal, markup)
 
     return flask_grammar.to_json()
-
-@app.route('/export', methods =  ['POST'])
-def export_dir():
-    flask_grammar.export_all()
-    return "exported grammars"
 
 if __name__ == '__main__':
     global flask_grammar

@@ -598,8 +598,16 @@ class PCFG(object):
         self.nonterminals.get(str(nonterminal.tag)).rules[rule].add_markup(markup)
 
     def remove_rule_markup(self, nonterminal, rule, markup):
-        self.nonterminals.get(str(nonterminal.tag)).rules[rule].add_markup(markup)
-    
+        """
+        remove occurence of markup from a given rule
+        """
+        self.nonterminals.get(str(nonterminal.tag)).rules[rule].remove_markup(markup)
+
+    def toggle_rule_markup(self, nonterminal, rule, markup):
+        if markup in self.nonterminals.get(str(nonterminal.tag)).rules[rule].markup:
+            self.remove_rule_markup( nonterminal, rule, markup)
+        else:
+            self.add_rule_markup( nonterminal, rule, markup)
 
     def remove_markup(self, nonterminal, markup):
         """
