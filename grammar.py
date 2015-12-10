@@ -466,8 +466,11 @@ class Rule(object):
             self.markup.add(markup)
 
     def remove_markup(self, markup):
-        if markup in self.markup:
-            self.markup.remove(markup)
+        #this is pretty gross
+        if markup in list(self.markup):
+            a = list(self.markup)
+            a.remove(markup)
+            self.markup = set(a)
 
 def parse_rule(rule_string):
     """
@@ -604,9 +607,11 @@ class PCFG(object):
         self.nonterminals.get(str(nonterminal.tag)).rules[rule].remove_markup(markup)
 
     def toggle_rule_markup(self, nonterminal, rule, markup):
-        if markup in self.nonterminals.get(str(nonterminal.tag)).rules[rule].markup:
+        if markup in list(self.nonterminals.get(str(nonterminal.tag)).rules[rule].markup):
+            print("removing rule markup")
             self.remove_rule_markup( nonterminal, rule, markup)
         else:
+            print("adding rule markup")
             self.add_rule_markup( nonterminal, rule, markup)
 
     def remove_markup(self, nonterminal, markup):
