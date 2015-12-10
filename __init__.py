@@ -1,5 +1,7 @@
 from flask import Flask, render_template, request, jsonify
+import os
 from test_gram import test
+from IPython import embed
 import grammar
 
 app = Flask(__name__)
@@ -20,20 +22,41 @@ we don't have nonlocal keywords. Make sure we modify our copy instead of make a 
 
 @app.route('/grammar/load', methods = ['POST'])
 def load_grammar():
-    print request.data
+    print request
     global flask_grammar
     flask_grammar = grammar.from_json(str(request.data))
     return flask_grammar.to_json()
 
-@app.route('/grammar/save', methods = ['POST'])
+@app.route('/grammar/from_file', methods = ['POST'])
+def load_file_grammar():
+    global flask_grammar
+    grammar_name = request.data
+    user_file = os.path.abspath(os.path.join(os.path.dirname(__file__), ''.join(['grammars/load/',grammar_name])))
+    grammar_file = open(user_file, 'r')
+    if grammar_file:
+        flask_grammar =  grammar.from_json(grammar_file.read())
+
+    return grammar.from_json(grammar_file.read())
+
+@app.route('/grammar/save', methods = ['GET','POST'])
 def save_grammar():
-    return flask_grammar.to_json()
+    filename = ''.join(['grammars/save/', request.data])
+    outfile = open(filename, 'w')
+    outfile.write(flask_grammar.to_json())
+    return "saving new grammar"
 
 @app.route('/grammar/new', methods = ['GET'])
 def new_grammar():
     global flask_grammar
     flask_grammar = grammar.PCFG()
     return flask_grammar.to_json()
+
+@app.route('/grammar/export', methods = ['GET', 'POST'])
+def export_grammar():
+    filename = ''.join(['grammars/exports/', request.data])
+    print filename
+    flask_grammar.export_all(filename)
+    return "exporting grammar database"
 
 @app.route('/nonterminal/add' , methods = ['POST'])
 def add_nt():
@@ -56,7 +79,7 @@ def set_deep():
 @app.route('/nonterminal/expand', methods=['POST', 'GET'])
 def expand_nt():
     data = request.get_json()
-    return test.expand(grammar.NonterminalSymbol(data['nonterminal'])).to_json()
+    return flask_grammar.expand(grammar.NonterminalSymbol(data['nonterminal'])).to_json()
 
 @app.route('/rule/add', methods=['POST'])
 def add_rule():
@@ -107,20 +130,16 @@ def toggle_tag():
     nonterminal = grammar.NonterminalSymbol(data["nonterminal"])
     markupSet = grammar.MarkupSet(data['markupSet'])
     markup = grammar.Markup(data['tag'], markupSet)
-
-    flask_grammar.toggle_markup(nonterminal, markup)
+    rule = int(data['rule'])
+    if rule != -1:
+        flask_grammar.toggle_rule_markup(nonterminal, rule, markup)
+    else:
+        flask_grammar.toggle_markup(nonterminal, markup)
 
     return flask_grammar.to_json()
-
-
-@app.route('/export', methods =  ['POST'])
-def export_dir():
-    flask_grammar.export_all()
-    return "exported grammars"
 
 if __name__ == '__main__':
     global flask_grammar
     flask_grammar = test
     app.debug = debug
     app.run()
-

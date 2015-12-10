@@ -1,6 +1,7 @@
 """import unittest for running tests"""
 import unittest
 from grammar import NonterminalSymbol, Rule, parse_rule, PCFG, SystemVar, Markup, MarkupSet, IntermediateDeriv, TerminalSymbol
+from IPython import embed
 
 class TestNonterminalEquivalency(unittest.TestCase):
     """
@@ -82,6 +83,36 @@ class TestRuleEquivalency(unittest.TestCase):
         c_rule = Rule(c_nonterminal, self.a_derivation)
         self.assertNotEqual(c_rule, self.a_rule)
 
+class TestRuleOperations(unittest.TestCase):
+
+    def test_add_markup_to_rule(self):
+        greet = NonterminalSymbol('greet')
+        greet_rule = Rule(greet, parse_rule("rude boy what you saying so rude"))
+        tone = MarkupSet("tone")
+        rude = Markup("rude", tone)
+        tone.add_markup(rude)
+        greet_rule.add_markup(rude)
+        greet.add_rule_object(greet_rule)
+        self.assertEqual(list(greet_rule.markup)[0], rude)
+        temp_markup = set()
+        temp_markup.add(rude)
+        should_derive = IntermediateDeriv(temp_markup, "rude boy what you saying so rude")
+        self.assertEqual(should_derive, greet.expand())
+
+    def test_add_markup_to_rule(self):
+        greet = NonterminalSymbol('greet')
+        greet_rule = Rule(greet, parse_rule("rude boy what you saying so rude"))
+        tone = MarkupSet("tone")
+        rude = Markup("rude", tone)
+        tone.add_markup(rude)
+        greet_rule.add_markup(rude)
+        greet.add_rule_object(greet_rule)
+        self.assertEqual(list(greet_rule.markup)[0], rude)
+        temp_markup = set()
+        temp_markup.add(rude)
+        should_derive = IntermediateDeriv(temp_markup, "rude boy what you saying so rude")
+        self.assertEqual(should_derive, greet.expand())
+
 class TestPcfgOperations(unittest.TestCase):
     """
     Testing operations on a PCFG
@@ -161,7 +192,6 @@ class TestPcfgOperations(unittest.TestCase):
 
         self.nonterminal.add_markup(self.markup)
         self.test_gram.add_nonterminal(self.nonterminal)
-
 
 
     def test_empty_expansion(self):

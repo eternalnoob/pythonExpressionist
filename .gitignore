@@ -1,7 +1,8 @@
 *.tsv
 node_modules
-*.swp
+.*.sw*
 *.pyc
 static/scripts/js/bootstrap
-static/scripts/css/*
+static/scripts/jsx
+static/scripts/css/
 __pycache__
