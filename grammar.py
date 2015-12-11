@@ -660,8 +660,11 @@ class PCFG(object):
                 rng_interval = float(expansion[deriv])/sum(expansion.values())
                 rng_max = prob_range + rng_interval
                 temp_prob = [prob_range, rng_max]
-                row_writer.writerow( [nonterminal, str(deriv.expansion),  '|'.join(deriv.markup),
-                    [prob_range,rng_max]])
+                row_writer.writerow(
+                    [nonterminal, str(deriv.expansion),
+                     '^'.join(str(annotation) for annotation in list(deriv.markup)),
+                    [prob_range, rng_max]]
+                )
                 prob_range += rng_interval
 
     def export_all(self, filename):
