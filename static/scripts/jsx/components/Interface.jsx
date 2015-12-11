@@ -141,6 +141,8 @@ var Interface = React.createClass({
       async: false,
       cache: false
       });
+    this.state.current_nonterminal = ""
+    this.state.current_rule = -1
     this.updateFromServer()
   },
 
