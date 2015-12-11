@@ -1,7 +1,7 @@
 from flask import Flask, render_template, request, jsonify
 import os
 from test_gram import test
-from IPython import embed
+# from IPython import embed
 import grammar
 
 app = Flask(__name__)

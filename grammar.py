@@ -8,7 +8,7 @@ import itertools
 import collections
 import csv
 import json
-from IPython import embed
+# from IPython import embed
 
 class IntermediateDeriv(object):
     """
