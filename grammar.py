@@ -260,8 +260,8 @@ class NonterminalSymbol(object):
         if is_list:
             ret_list = list(itertools.chain(*ret_list))
 
-
         return ret_list
+
 
     def _pick_a_production_rule(self):
         """Probabilistically select a production rule."""
@@ -466,7 +466,7 @@ class Rule(object):
             self.markup.add(markup)
 
     def remove_markup(self, markup):
-        #this is pretty gross
+        #this is pretty gross, but it's working, I suppose
         if markup in list(self.markup):
             a = list(self.markup)
             a.remove(markup)

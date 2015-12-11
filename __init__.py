@@ -2,6 +2,7 @@ from flask import Flask, render_template, request, jsonify
 import os
 from test_gram import test
 # from IPython import embed
+import re
 import grammar
 
 app = Flask(__name__)
@@ -61,6 +62,7 @@ def export_grammar():
 @app.route('/nonterminal/add' , methods = ['POST'])
 def add_nt():
     data = request.get_json()
+    data['nonterminal'] = re.search( '[^\[\]]+', data['nonterminal'] ).group(0)
     flask_grammar.add_nonterminal( grammar.NonterminalSymbol(data['nonterminal']))
     return flask_grammar.to_json()
 
