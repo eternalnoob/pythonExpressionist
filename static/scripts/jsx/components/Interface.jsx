@@ -83,7 +83,7 @@ var Interface = React.createClass({
     
     console.log("add a new nonterminal")
     var nonterminal = window.prompt("Please enter Nonterminal Name")
-    if ( nonterminal)
+    if ( nonterminal != "")
     {
       console.log(nonterminal)
       if (this.state.nonterminals[nonterminal])
@@ -187,40 +187,45 @@ var Interface = React.createClass({
   {
     console.log("You are adding a MarkupSet!")
     var markupTag = window.prompt("Please enter MarkupSet")
-    var object = {"markupSet": markupTag}
-    console.log(object)
-    ajax({
-      url: '/markup/addtagset',
-      type: "POST",
-      contentType: "application/json",
-      data: JSON.stringify(object),
-      async: false,
-      cache: false
-      })
-      this.updateFromServer()
+    if ( markupTag != "" )
+    {
+      var object = {"markupSet": markupTag}
+      console.log(object)
+      ajax({
+        url: '/markup/addtagset',
+        type: "POST",
+        contentType: "application/json",
+        data: JSON.stringify(object),
+        async: false,
+        cache: false
+        })
+        this.updateFromServer()
+    }
   },
 
   handleMarkupAdd: function(set)
   {
     console.log("You are adding a single markup to set "+set)
     var markupTag = window.prompt("Please enter Markup Tag")
-    var object = {"markupSet": set,
-                  "tag": markupTag}
-    console.log(object)
-    ajax({
-      url: '/markup/addtag',
-      type: "POST",
-      contentType: "application/json",
-      data: JSON.stringify(object),
-      async: false,
-      cache: false
-      })
-    this.updateFromServer()
+    if ( markupTag != "" )
+    {
+      var object = {"markupSet": set,
+                    "tag": markupTag}
+      console.log(object)
+      ajax({
+        url: '/markup/addtag',
+        type: "POST",
+        contentType: "application/json",
+        data: JSON.stringify(object),
+        async: false,
+        cache: false
+        })
+      this.updateFromServer()
+    }
   },
 
   handleRuleClick: function(expansion)
   {
-    console.log("we're trying it")
     console.log(expansion)
     var rules=this.state.nonterminals[this.state.current_nonterminal].rules
     var total_len = rules.length
@@ -240,21 +245,24 @@ var Interface = React.createClass({
     console.log("add a new Rule")
     var expansion = window.prompt("Please enter Rule expansion")
     var app_rate = window.prompt("please enter application_rate")
-    var object = {"rule": expansion,
-                  "app_rate": app_rate,
-                  "nonterminal": this.state.current_nonterminal
-              }
-    console.log(object)
-    ajax({
-      url: '/rule/add',
-      type: "POST",
-      contentType: "application/json",
-      data: JSON.stringify(object),
-      async: false,
-      cache: false
-      })
-    console.log("adding a rule")
-    this.updateFromServer()
+    if ( expansion != "" && !isNaN(app_rate) )
+    {
+      var object = {"rule": expansion,
+                    "app_rate": app_rate,
+                    "nonterminal": this.state.current_nonterminal
+                }
+      console.log(object)
+      ajax({
+        url: '/rule/add',
+        type: "POST",
+        contentType: "application/json",
+        data: JSON.stringify(object),
+        async: false,
+        cache: false
+        })
+      console.log("adding a rule")
+      this.updateFromServer()
+    }
   },
 
   onRuleDelete: function(index)
@@ -281,6 +289,8 @@ var Interface = React.createClass({
     var index = this.state.current_rule
     console.log("modifying application rate")
     var app_rate = window.prompt("Please enter new application rate")
+    if ( !isNaN(app_rate) )
+    {
         var object = {"rule": index, "nonterminal": this.state.current_nonterminal, "app_rate": app_rate}
         console.log(object)
         ajax({
@@ -292,6 +302,7 @@ var Interface = React.createClass({
           cache: false
           })
           this.updateFromServer()
+    }
   },
 
   importReps: function()
@@ -302,6 +313,8 @@ var Interface = React.createClass({
   loadGrammar: function()
   {
     var filename = window.prompt("Enter the Name of the Grammar you wish to load")
+    if( filename != "" )
+    {
     ajax({
       url: 'grammar/from_file',
       type: "POST",
@@ -310,7 +323,8 @@ var Interface = React.createClass({
       async: false,
       cache: false
       })
-  this.updateFromServer()
+    this.updateFromServer()
+    }
   
 
   },
