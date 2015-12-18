@@ -55,8 +55,9 @@ def new_grammar():
 @app.route('/grammar/export', methods = ['GET', 'POST'])
 def export_grammar():
     filename = ''.join(['grammars/exports/', request.data])
-    print filename
+    print 'Exporting to {}...'.format(filename)
     flask_grammar.export_all(filename)
+    print 'Finished export.'
     return "exporting grammar database"
 
 @app.route('/nonterminal/add' , methods = ['POST'])
