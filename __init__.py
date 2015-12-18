@@ -6,7 +6,7 @@ import re
 import grammar
 
 app = Flask(__name__)
-debug = True
+debug = False
 
 @app.route('/' , methods = ['GET', 'POST'])
 def index():
