@@ -397,7 +397,7 @@ var Interface = React.createClass({
           {board}
       </div>
 
-      <div style= {{"width": "25%", "height":"100%", position: "absolute", top: 0, right: 0}}>
+      <div style= {{"overflow": "auto", "width": "25%", "height":"100%", position: "absolute", top: 0, right: 0}}>
           <NonterminalList nonterminals={this.state.nonterminals} onAddNonterminal={this.handleNonterminalAdd} onClickNonterminal={this.handleNonterminalClick}>Test</NonterminalList>
       </div>
 

@@ -6,9 +6,8 @@
   var React = require('react')
   var Nonterminal = require('./Nonterminal.jsx')
   var ListGroupItem = require('react-bootstrap').ListGroupItem
+  var ListGroup = require('react-bootstrap').ListGroup
   var Glyphicon = require('react-bootstrap').Glyphicon
-  var Infinite = require('react-infinite')
-
 
   var NonterminalList = React.createClass({
     propTypes: {
@@ -89,10 +88,10 @@
 
       return(
       
-      <Infinite containerHeight={window.innerHeight} elementHeight={42}>
+        <ListGroup>
           {total}
           <ListGroupItem bsSize="xsmall" key ="ADDNEW" onClick={this.props.onAddNonterminal}><Glyphicon glyph="plus"/></ListGroupItem>
-      </Infinite>
+        </ListGroup>
       );
     }
   });
