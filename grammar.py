@@ -10,6 +10,7 @@ import csv
 import json
 # from IPython import embed
 
+
 class IntermediateDeriv(object):
     """
     This class is used in the probabilistic Monte Carlo Expansions to associate markup with
@@ -68,7 +69,6 @@ class IntermediateDeriv(object):
         return hash(( self.expansion))
 
 
-
 class Markup(object):
     """
     individual instance of markup, found as a list within NonterminalSymbol
@@ -97,7 +97,6 @@ class Markup(object):
 
     def __repr__(self):
         return self.__str__()
-
 
 
 class MarkupSet(object):
@@ -262,6 +261,18 @@ class NonterminalSymbol(object):
 
         return ret_list
 
+    def exhaustively_and_nonprobabilistically_expand(self):
+        """Exhaustively expand this nonterminal symbol using each of its production rules once and only once.
+
+        If a production rule includes an embedded nonterminal symbol that has not been expanded yet,
+        this method will make a call to this same method for that nonterminal symbol to recursively
+        expand it. In this way, another symbol may call this method for this symbol if it needs to expand
+        it for one of its production rules. Because we don't care about probabilities, but rather
+        exhaustive expansion, we can just save the results from the first time this method is called so
+        that we never do the computation more than once.
+        """
+
+
 
     def _pick_a_production_rule(self):
         """Probabilistically select a production rule."""
@@ -341,6 +352,7 @@ class TerminalSymbol(object):
 
     def __repr__(self):
         return self.__str__()
+
 
 class SystemVar(TerminalSymbol):
     """
@@ -472,6 +484,7 @@ class Rule(object):
             a.remove(markup)
             self.markup = set(a)
 
+
 def parse_rule(rule_string):
     """
     function parses a string and returns the generation represented by that string
@@ -497,6 +510,7 @@ def parse_rule(rule_string):
         else:
             derivation.append(TerminalSymbol(stripped))
     return derivation
+
 
 class PCFG(object):
     """
