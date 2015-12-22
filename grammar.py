@@ -11,6 +11,9 @@ import json
 # from IPython import embed
 
 
+N_RULES_FIRED = 0
+
+
 class IntermediateDeriv(object):
     """
     This class is used in the probabilistic Monte Carlo Expansions to associate markup with
@@ -33,14 +36,6 @@ class IntermediateDeriv(object):
     def __str__(self):
         return self.expansion.__str__()+" MARKUP"+self.markup.__str__()
 
-    def to_json(self):
-
-        def set_default(obj):
-            if isinstance(obj, Markup):
-                return obj.__str__()
-
-        return json.dumps({"derivation": self.expansion.__str__(), "markup": list(self.markup)}, default=set_default)
-
     def __add__(self, other):
         #if adding two derivations together, add them
         if isinstance( other, IntermediateDeriv):
@@ -59,14 +54,26 @@ class IntermediateDeriv(object):
         else:
             return self.__add__(other)
 
-    def mcm_derive(self, samplesscalar,  markup):
-        return  self.expansion.mcm_derive(samplesscalar, markup)
-
     def __repr__(self):
         return self.__str__()
 
     def __hash__(self):
         return hash(( self.expansion))
+
+    def to_json(self):
+
+        def set_default(obj):
+            if isinstance(obj, Markup):
+                return obj.__str__()
+
+        return json.dumps({"derivation": self.expansion.__str__(), "markup": list(self.markup)}, default=set_default)
+
+    def mcm_derive(self, samplesscalar,  markup):
+        return self.expansion.mcm_derive(samplesscalar, markup)
+
+    def exhaustively_and_nonprobabilistically_derive(self, markup):
+        """"""
+        return self.expansion.exhaustively_and_nonprobabilistically_derive(markup=markup)
 
 
 class Markup(object):
@@ -152,6 +159,10 @@ class NonterminalSymbol(object):
         for markups in list(markup):
             if markups not in list(self.markup):
                 self.markup.add(markups)
+        # This attribute holds a list containing all possible expansions of this symbol (each being represented by
+        # an agglomerated IntermediateDerivation object); it's built once and only once the first time
+        # self.exhaustively_and_nonprobabilistically_expand() is called
+        self.all_possible_expansions = None
 
     def __eq__(self, other):
         if isinstance(other, NonterminalSymbol):
@@ -213,16 +224,15 @@ class NonterminalSymbol(object):
             if markup == markup_tags:
                 self.markup.remove(markup_tags)
 
-
     def monte_carlo_expand(self, samplesscalar=1, markup=None):
-        if markup is None:
-            markup = set()
         """
         probabilistically expand our nonterminal
         samplesScalar*n times, where n is the number of productions rules
         at our particular level
         returns an array containing the n samples of the productions for self
         """
+        if markup is None:
+            markup = set()
         #expand n times
         rule_choices = []
         ret_list = []
@@ -261,7 +271,7 @@ class NonterminalSymbol(object):
 
         return ret_list
 
-    def exhaustively_and_nonprobabilistically_expand(self):
+    def exhaustively_and_nonprobabilistically_expand(self, markup=None):
         """Exhaustively expand this nonterminal symbol using each of its production rules once and only once.
 
         If a production rule includes an embedded nonterminal symbol that has not been expanded yet,
@@ -271,8 +281,26 @@ class NonterminalSymbol(object):
         exhaustive expansion, we can just save the results from the first time this method is called so
         that we never do the computation more than once.
         """
-
-
+        if not self.all_possible_expansions:
+            # Collect all of the mark-up that we have accumulated at this point
+            accumulated_markup = self.markup if markup is None else self.markup | markup
+            # Prepare intermediate derivations for each of the production rules associated
+            # with this symbol
+            intermediate_derivations = [
+                IntermediateDeriv(markup=accumulated_markup, expansion=rule) for rule in self.rules
+            ]
+            # Fire the production rules associated with these intermediate derivations
+            expanded_intermediate_derivations = []
+            for intermediate_derivation in intermediate_derivations:
+                expanded_intermediate_derivations.append(
+                    intermediate_derivation.exhaustively_and_nonprobabilistically_derive(markup=accumulated_markup)
+                )
+            # Flatten out the list (JOR: not sure why exactly)
+            flattened_list_of_expanded_intermediate_derivations = list(
+                itertools.chain(*expanded_intermediate_derivations)
+            )
+            self.all_possible_expansions = flattened_list_of_expanded_intermediate_derivations
+        return self.all_possible_expansions
 
     def _pick_a_production_rule(self):
         """Probabilistically select a production rule."""
@@ -314,8 +342,8 @@ class NonterminalSymbol(object):
             # Make sure the last bound indeed extends to 1.0
             last_bound_attributed = list(probabilities)[-1]
             fitted_probability_distribution[last_bound_attributed] = (
-                    fitted_probability_distribution[last_bound_attributed][0], 1.0
-                    )
+                fitted_probability_distribution[last_bound_attributed][0], 1.0
+            )
             self.rules_probability_distribution = fitted_probability_distribution
 
 
@@ -329,6 +357,7 @@ class TerminalSymbol(object):
         """
         self.representation = representation
         self.markup = set()
+
     def __eq__(self, other):
         if isinstance(other, TerminalSymbol):
             return self.representation == other.representation
@@ -347,6 +376,9 @@ class TerminalSymbol(object):
         """
         return self.expand(markup)
 
+    def exhaustively_and_nonprobabilistically_expand(self, markup):
+        return self.expand(markup=markup)
+
     def __str__(self):
         return self.representation.__str__()
 
@@ -357,7 +389,7 @@ class TerminalSymbol(object):
 class SystemVar(TerminalSymbol):
     """
     class to handle systemVariables which are processed by game engine
-    instead of Expressionist, seperate from TerminalSymbol so that
+    instead of Expressionist, separate from TerminalSymbol so that
     we can provide a list of all systemVar easily
     """
 
@@ -382,7 +414,6 @@ class SystemVar(TerminalSymbol):
         else:
             return 0
 
-
     def expand(self, markup):
         """Return systemVar"""
         return IntermediateDeriv(self.markup | markup, self.__str__())
@@ -394,7 +425,7 @@ class SystemVar(TerminalSymbol):
 class Rule(object):
     """A production rule in a grammar."""
 
-    def __init__(self, symbol, derivation, application_rate=1, markup = None):
+    def __init__(self, symbol, derivation, application_rate=1, markup=None):
         """Initialize a Rule object.
         :param symbol: Nonterminal symbol(lhs) for this rule
         :type symbol: NonterminalSymbol
@@ -409,7 +440,10 @@ class Rule(object):
         self.application_rate = application_rate
         #specific rules can have markup to represent variation within nonterminal that does not warrant a new nonterminal
         self.markup = markup
-
+        # This attribute holds a list containing all possible derivations of this rule (each being represented by
+        # an agglomerated IntermediateDerivation object); it's built once and only once the first time
+        # self.exhaustively_and_nonprobabilistically_derive() is called
+        self.all_possible_derivations = None
 
     def __eq__(self, other):
         #equality does not consider application_rate
@@ -417,6 +451,12 @@ class Rule(object):
             return self.symbol.tag == other.symbol.tag and self.derivation == other.derivation
         else:
             return False
+
+    def __str__(self):
+        return self.symbol.__str__()+ ' -> ' + self.derivation.__str__()
+
+    def __repr__(self):
+        return self.__str__()
 
     def modify_application_rate(self, application_rate):
         """
@@ -467,11 +507,38 @@ class Rule(object):
         #ret_list = list(itertools.chain.from_iterable(ret_list))
         return final
 
-    def __str__(self):
-        return self.symbol.__str__()+ ' -> ' + self.derivation.__str__()
-
-    def __repr__(self):
-        return self.__str__()
+    def exhaustively_and_nonprobabilistically_derive(self, markup):
+        global N_RULES_FIRED
+        N_RULES_FIRED += 1
+        print "{}: {}".format(N_RULES_FIRED, self)
+        if not self.all_possible_derivations:
+            # Build up a list containing all the possible intermediate derivations for each
+            # symbol that is used in this rule
+            intermediate_derivations = []
+            for symbol in self.derivation:
+                if isinstance(symbol, NonterminalSymbol):
+                    # If a symbol is nonterminal, then calling exhaustively_and_nonprobabilistically_expand()
+                    # for it will return a list of IntermediateDerivation objects
+                    intermediate_derivations.append(symbol.exhaustively_and_nonprobabilistically_expand(markup=markup))
+                else:
+                    # If a symbol is terminal, calling exhaustively_and_nonprobabilistically_expand() for it
+                    # will return a single IntermediateDerivation that expands to the string representing the
+                    # nonterminal symbol; as such, we need to wrap this object up in a list before we append it
+                    intermediate_derivations.append(
+                        [symbol.exhaustively_and_nonprobabilistically_expand(markup=markup)]
+                    )
+            # To exhaustively compute all possible intermediate derivations for this symbol, we
+            # simply take the Cartesian product of the list of lists that we have just built
+            all_possible_combinations_of_intermediate_derivations = list(itertools.product(*intermediate_derivations))
+            # Now we can yield new intermediate derivations for each of these combinations
+            # that combines the string expansions and annotations of all the intermediate derivations
+            # in the combination
+            new_combined_intermediate_derivations = [
+                sum(combination_of_intermediate_derivations)+self.markup for
+                combination_of_intermediate_derivations in all_possible_combinations_of_intermediate_derivations
+            ]
+            self.all_possible_derivations = new_combined_intermediate_derivations
+        return self.all_possible_derivations
 
     def add_markup(self, markup):
         if markup not in self.markup:
@@ -519,10 +586,11 @@ class PCFG(object):
     Also allows us to selectively expand NonterminalSymbols to see all of their productions
     """
 
-    def __init__(self):
+    def __init__(self, monte_carlo=False):
         self.nonterminals = {}
         self.system_vars = []
         self.markup_class = {}
+        self.monte_carlo = monte_carlo  # Whether export will rely on a Monte Carlo derivation procedure
 
     def add_nonterminal(self, nonterminal):
         """ add a nonterminal to our grammar"""
@@ -572,7 +640,6 @@ class PCFG(object):
         """expand a given nonterminal"""
         return self.nonterminals.get(str(nonterminal.tag)).expand(markup = set())
 
-
     def modify_application_rate(self, nonterminal, rule_index, application_rate):
         """modify application_rate for the given nonterminal and derivation"""
         rules = self.nonterminals.get(str(nonterminal.tag)).rules
@@ -580,14 +647,16 @@ class PCFG(object):
         self.nonterminals.get(str(nonterminal.tag))._fit_probability_distribution()
 
     def monte_carlo_expand(self, nonterminal, samplesscalar=1):
-
         """
         performs monte_carlo_expand on a given nonterminal
         returns a list of size len(nonterminal.rules)*samplesscalar(no longer true, now size can
         vary depending on if every possible production was sampled
         """
+        return self.nonterminals[nonterminal.tag].monte_carlo_expand(samplesscalar)
 
-        return self.nonterminals.get(str(nonterminal.tag)).monte_carlo_expand(samplesscalar)
+    def exhaustively_and_nonprobabilistically_expand(self, nonterminal):
+        """Exhaustively and nonprobabilistically expands a nonterminal, producing one of each possible derivation."""
+        return self.nonterminals[nonterminal.tag].exhaustively_and_nonprobabilistically_expand()
 
     def set_deep(self, nonterminal, truthy):
         self.nonterminals[str(nonterminal.tag)].set_deep(truthy)
@@ -660,7 +729,7 @@ class PCFG(object):
         if not self.markup_class.get(str(markupSet.tagset)):
             self.markup_class[str(markupSet.tagset)] = set()
 
-    def export(self, nonterminal, filename, samplesscalar=1,):
+    def monte_carlo_export(self, nonterminal, filename, samplesscalar=1,):
         """
         returns a tab seperated value list of productions, duplicates removed.
         one thing I need to change is to output the set of markup in a nicer fashion
@@ -681,16 +750,38 @@ class PCFG(object):
                 )
                 prob_range += rng_interval
 
+    def exhaustively_and_nonprobabilistically_export(self, nonterminal, filename):
+        """Append to a tab-separated file lines specifying each of the templated lines of dialogue that
+        may be yielded by each of the possible terminal expansions of nonterminal.
+        """
+        all_possible_expansions_of_this_symbol = (
+            self.exhaustively_and_nonprobabilistically_expand(nonterminal=nonterminal)
+        )
+        with open(filename, 'a') as export_tsv_file:
+            row_writer = csv.writer(
+                export_tsv_file, delimiter='\t', quotechar='|', quoting=csv.QUOTE_MINIMAL
+            )
+            for intermediate_derivation_object in all_possible_expansions_of_this_symbol:
+                row_writer.writerow(
+                    [nonterminal, str(intermediate_derivation_object.expansion),
+                     '^'.join(str(annotation) for annotation in list(intermediate_derivation_object.markup)),
+                    ['N/A', 'N/A']]  # We write 'N/A' here to indicate that we did not expand probabilistically
+                )
+
     def export_all(self, filename):
-        with open(filename, 'w') as csvfile:
-            row_writer = csv.writer( csvfile, delimiter='\t', quotechar='|', quoting =
-                    csv.QUOTE_MINIMAL)
-            row_writer.writerow( ['Deep Meaning', 'Expansion','Markup', 'Probability'] )
+        with open(filename, 'w') as tsv_export_file:
+            row_writer = csv.writer(
+                tsv_export_file, delimiter='\t', quotechar='|', quoting=csv.QUOTE_MINIMAL
+            )
+            header = ['Top-level Symbol', 'Expansion', 'Markup', 'Probability']
+            row_writer.writerow(header)
         for nonterminal in self.nonterminals.itervalues():
             if nonterminal.deep:
-                self.export(nonterminal, filename)
-
-
+                print "Expanding top-level symbol {}".format(nonterminal)
+                if self.monte_carlo:
+                    self.monte_carlo_export(nonterminal, filename)
+                else:
+                    self.exhaustively_and_nonprobabilistically_export(nonterminal=nonterminal, filename=filename)
 
     def to_json(self):
         #total represents our final dictionary we will conver to JSON
@@ -713,16 +804,16 @@ class PCFG(object):
 
                 #createJSON representation for individual rule markup
                 for markup in rules.markup:
-                    rule_mu_dict[markup.tagset.__str__()] |= set([markup.tag])
-                    markups[markup.tagset.__str__()] |= set([markup.tag])
+                    rule_mu_dict[markup.tagset.__str__()] |= {markup.tag}
+                    markups[markup.tagset.__str__()] |= {markup.tag}
 
                 rules_list.append({'expansion': rules.derivation_json(), 'app_rate': rules.application_rate, 'markup': rule_mu_dict})
             temp['rules'] = rules_list
 
             markup_dict = collections.defaultdict(set)
             for markup in value.markup:
-                markup_dict[markup.tagset.__str__()] |= set([markup.tag])
-                markups[markup.tagset.__str__()] |= set([markup.tag])
+                markup_dict[markup.tagset.__str__()] |= {markup.tag}
+                markups[markup.tagset.__str__()] |= {markup.tag}
 
             temp['markup'] = markup_dict
             nonterminals[value.tag.__str__()] = temp
@@ -734,9 +825,9 @@ class PCFG(object):
             total['markups'][str(markupset)] = set()
             for markups in self.markup_class[markupset]:
                 if total['markups'].get(str(markupset)):
-                    total['markups'][str(markupset)] |= set([markups.tag])
+                    total['markups'][str(markupset)] |= {markups.tag}
                 else:
-                    total['markups'][str(markupset)] = set([markups.tag])
+                    total['markups'][str(markupset)] = {markups.tag}
             
         total['system_vars'] = sorted(self.system_vars)
 
@@ -760,7 +851,6 @@ def from_json(json_in):
     for tag, nonterminal in nonterminals.iteritems():
         rules = nonterminal['rules']
         markup = nonterminal['markup']
-        print markup
 
         #translate UI markup rep into data markup rep
         tmp_markups = []
@@ -796,4 +886,4 @@ def from_json(json_in):
     return gram_res
 
 
-
+g = from_json(open('/Users/jamesryan/Desktop/pythonExpressionist-0.1-beta/grammars/save/talktown.json').read())
