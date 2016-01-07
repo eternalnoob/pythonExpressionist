@@ -92,6 +92,7 @@ class Markup(object):
         """
         self.tag = tag
         self.tagset = tagset
+        self.time_of_definition_index = tagset.assign_time_of_definition_index()
         #add ourself to our markup
 
     def __eq__(self, other):
@@ -116,6 +117,10 @@ class MarkupSet(object):
     def __init__(self, tagset):
         self.tagset = tagset
         self.markups = set()
+        # This increments as new tags are defined to allow sorting of drop-down
+        # menus in the authoring interface by time of tag definition, e.g.,
+        # an ordering with the most recently defined tags listed first
+        self.current_time_of_definition_index = -1
 
     def __eq__(self, other):
         if isinstance(other, MarkupSet):
@@ -136,6 +141,11 @@ class MarkupSet(object):
         """
         if markup.tagset == self.tagset and markup in self.markups:
             self.markups.remove(markup)
+
+    def assign_time_of_definition_index(self):
+        """Increment the current time-of-definition index and then return the result."""
+        self.current_time_of_definition_index += 1
+        return self.current_time_of_definition_index
 
     def __str__(self):
         return self.tagset.__str__()
@@ -841,11 +851,23 @@ class PCFG(object):
         total['markups'] = {}
         for markupset in self.markup_class:
             total['markups'][str(markupset)] = set()
-            for markups in self.markup_class[markupset]:
+            for tag_object in self.markup_class[markupset]:
                 if total['markups'].get(str(markupset)):
-                    total['markups'][str(markupset)] |= {markups.tag}
+                    total['markups'][str(markupset)] |= {tag_object}
                 else:
-                    total['markups'][str(markupset)] = {markups.tag}
+                    total['markups'][str(markupset)] = {tag_object}
+            # Sort these in reverse order of definition time, meaning the most recently
+            # defined mark-up shows up at the top of the drop-down; this makes it easy
+            # to find and attribute a new tag that you've just defined in the case of
+            # a very large tagset
+            total['markups'][str(markupset)] = sorted(
+                total['markups'][str(markupset)],
+                key=lambda tag: tag.time_of_definition_index, reverse=True
+            )
+            # Just save the strings for the tags for each of the tag objects
+            total['markups'][str(markupset)] = [
+                str(tag_object.tag) for tag_object in total['markups'][str(markupset)]
+            ]
             
         total['system_vars'] = sorted(self.system_vars)
 
