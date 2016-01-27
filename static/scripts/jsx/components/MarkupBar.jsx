@@ -30,9 +30,10 @@ var MarkupBar = React.createClass({
 
 
     return(
-      <ButtonGroup>
+        <ButtonGroup className="btn-test">
+          <Button className="grp_button" onClick={this.props.onAddMarkupSet} key="addnew"><Glyphicon
+              glyph="plus"/></Button>
         {output}
-        <Button onClick = {this.props.onAddMarkupSet} key="addnew"><Glyphicon glyph="plus"/></Button>
       </ButtonGroup>
     )
     }

@@ -1,0 +1,14 @@
+.dropdown-menu {
+    height: auto;
+    max-height: 300px;
+    overflow-x: hidden;
+}
+
+.btn-test {
+    margin-right: -1000vw;
+}
+
+.muwrap {
+    width: 100%;
+    overflow: auto;
+}

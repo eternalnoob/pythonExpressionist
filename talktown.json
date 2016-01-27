@@ -1,0 +1,1996 @@
+{
+  "markups": {
+    "AddressTopic": [
+      "weather"
+    ],
+    "ChangeSubjectTo": [],
+    "Moves": [
+      "introduce self",
+      "say goodbye",
+      "say something positive",
+      "say nice to meet you",
+      "greet",
+      "end conversation",
+      "say something negative",
+      "ask how are you",
+      "request name",
+      "greet back",
+      "introduce self back",
+      "assert about the weather",
+      "make small talk",
+      "ask about the weather",
+      "answer how are you"
+    ],
+    "Preconditions": [
+      "lambda conversation: conversation.earlier_move(conversation.speaker, 'assert about the weather')",
+      "lambda speaker, interlocutor: speaker.routine.working and not interlocutor.routine.working",
+      "lambda conversation: conversation.has_obligation(conversation.speaker, 'say nice to meet you')",
+      "lambda speaker: speaker.male",
+      "lambda conversation: conversation.last_interlocutor_turn.performed_move('say nice to meet you')",
+      "lambda conversation: conversation.earlier_move(conversation.speaker, 'ask about the weather')",
+      "lambda conversation: not conversation.earlier_move('either', 'say nice to meet you')",
+      "lambda conversation: not conversation.earlier_move(conversation.speaker, 'assert about the weather')",
+      "lambda speaker, interlocutor: speaker.first_name == interlocutor.first_name",
+      "lambda conversation: not conversation.already_a_topic('weather')",
+      "lambda speaker: speaker.personality.low_e",
+      "lambda speaker: speaker.game.weather == 'bad' or speaker.personality.low_a",
+      "lambda speaker, interlocutor: interlocutor in speaker.relationships",
+      "lambda speaker: speaker.game.weather == 'good'",
+      "lambda conversation: not conversation.earlier_move('either', 'introduce self')",
+      "lambda speaker: speaker.personality.high_e",
+      "lambda conversation: conversation.earlier_move(conversation.interlocutor, 'introduce self')",
+      "lambda speaker, interlocutor: speaker.knows(interlocutor, 'first name')",
+      "lambda conversation: not conversation.earlier_move(conversation.speaker, 'ask about the weather')",
+      "lambda speaker, interlocutor: interlocutor not in speaker.relationships"
+    ],
+    "Propositions": [],
+    "PushObligation": [
+      "answer how are you",
+      "introduce self",
+      "introduce self back",
+      "assert about the weather",
+      "say nice to meet you",
+      "say goodbye",
+      "greet back"
+    ],
+    "PushSpeakerObligation": [],
+    "PushTopic": [
+      "weather"
+    ],
+    "ViolationConditions": [
+      "awkward rehash<--lambda conversation: conversation.earlier_move(conversation.speaker, 'introduce self')",
+      "awkward rehash<--lambda conversation: conversation.earlier_move('either', 'ask about the weather')",
+      "unprompted how i am<--lambda conversation: conversation.no_obligation(conversation.speaker, 'answer how are you')",
+      "repeated resolved question<--lambda conversation: conversation.earlier_move(conversation.speaker, 'ask how are you')",
+      "unprompted greet back<--lambda conversation: conversation.no_obligation(conversation.speaker, 'greet back')",
+      "unbound 'thing is' anaphor<--lambda conversation: conversation.last_turn.did_not_address_topic('weather')"
+    ]
+  },
+  "nonterminals": {
+    "Greeting word": {
+      "complete": true,
+      "deep": false,
+      "markup": {},
+      "rules": [
+        {
+          "app_rate": 3,
+          "expansion": [
+            "Hi"
+          ],
+          "markup": {}
+        },
+        {
+          "app_rate": 4,
+          "expansion": [
+            "Hey"
+          ],
+          "markup": {}
+        },
+        {
+          "app_rate": 6,
+          "expansion": [
+            "Hello"
+          ],
+          "markup": {}
+        },
+        {
+          "app_rate": 1,
+          "expansion": [
+            "Greetings"
+          ],
+          "markup": {}
+        }
+      ]
+    },
+    "Negative adj": {
+      "complete": true,
+      "deep": false,
+      "markup": {},
+      "rules": [
+        {
+          "app_rate": 10,
+          "expansion": [
+            "Bad"
+          ],
+          "markup": {}
+        },
+        {
+          "app_rate": 3,
+          "expansion": [
+            "Horrible"
+          ],
+          "markup": {}
+        },
+        {
+          "app_rate": 3,
+          "expansion": [
+            "Poor"
+          ],
+          "markup": {}
+        },
+        {
+          "app_rate": 2,
+          "expansion": [
+            "Miserable"
+          ],
+          "markup": {}
+        },
+        {
+          "app_rate": 2,
+          "expansion": [
+            "Rotten"
+          ],
+          "markup": {}
+        }
+      ]
+    },
+    "Positive adj": {
+      "complete": true,
+      "deep": false,
+      "markup": {},
+      "rules": [
+        {
+          "app_rate": 1,
+          "expansion": [
+            "Lovely"
+          ],
+          "markup": {}
+        },
+        {
+          "app_rate": 5,
+          "expansion": [
+            "Good"
+          ],
+          "markup": {}
+        },
+        {
+          "app_rate": 5,
+          "expansion": [
+            "Great"
+          ],
+          "markup": {}
+        },
+        {
+          "app_rate": 5,
+          "expansion": [
+            "Nice"
+          ],
+          "markup": {}
+        },
+        {
+          "app_rate": 3,
+          "expansion": [
+            "Fantastic"
+          ],
+          "markup": {}
+        },
+        {
+          "app_rate": 3,
+          "expansion": [
+            "Excellent"
+          ],
+          "markup": {}
+        },
+        {
+          "app_rate": 3,
+          "expansion": [
+            "Wonderful"
+          ],
+          "markup": {}
+        },
+        {
+          "app_rate": 3,
+          "expansion": [
+            "Spectacular"
+          ],
+          "markup": {}
+        },
+        {
+          "app_rate": 4,
+          "expansion": [
+            "Amazing"
+          ],
+          "markup": {}
+        }
+      ]
+    },
+    "Seriously/really/i mean it": {
+      "complete": true,
+      "deep": false,
+      "markup": {},
+      "rules": [
+        {
+          "app_rate": 1,
+          "expansion": [
+            "Seriously"
+          ],
+          "markup": {}
+        },
+        {
+          "app_rate": 1,
+          "expansion": [
+            "Really"
+          ],
+          "markup": {}
+        },
+        {
+          "app_rate": 1,
+          "expansion": [
+            "Truly"
+          ],
+          "markup": {}
+        },
+        {
+          "app_rate": 1,
+          "expansion": [
+            "I mean it"
+          ],
+          "markup": {}
+        }
+      ]
+    },
+    "agreement invitation marker": {
+      "complete": true,
+      "deep": false,
+      "markup": {},
+      "rules": [
+        {
+          "app_rate": 10,
+          "expansion": [
+            "huh"
+          ],
+          "markup": {}
+        },
+        {
+          "app_rate": 6,
+          "expansion": [
+            "right"
+          ],
+          "markup": {}
+        },
+        {
+          "app_rate": 2,
+          "expansion": [
+            "don't you think"
+          ],
+          "markup": {}
+        }
+      ]
+    },
+    "answer how are you": {
+      "complete": true,
+      "deep": false,
+      "markup": {
+        "Moves": [
+          "answer how are you"
+        ],
+        "ViolationConditions": [
+          "unprompted how i am<--lambda conversation: conversation.no_obligation(conversation.speaker, 'answer how are you')"
+        ]
+      },
+      "rules": [
+        {
+          "app_rate": 1,
+          "expansion": [
+            "[[answer how are you to a stranger]]"
+          ],
+          "markup": {}
+        },
+        {
+          "app_rate": 1,
+          "expansion": [
+            "[[answer how are you to someone you know]]"
+          ],
+          "markup": {}
+        }
+      ]
+    },
+    "answer how are you generically": {
+      "complete": true,
+      "deep": false,
+      "markup": {},
+      "rules": [
+        {
+          "app_rate": 1,
+          "expansion": [
+            "I'm good."
+          ],
+          "markup": {}
+        },
+        {
+          "app_rate": 1,
+          "expansion": [
+            "Not bad."
+          ],
+          "markup": {}
+        },
+        {
+          "app_rate": 1,
+          "expansion": [
+            "I'm alright."
+          ],
+          "markup": {}
+        },
+        {
+          "app_rate": 1,
+          "expansion": [
+            "Fine."
+          ],
+          "markup": {}
+        },
+        {
+          "app_rate": 1,
+          "expansion": [
+            "Alright."
+          ],
+          "markup": {}
+        },
+        {
+          "app_rate": 1,
+          "expansion": [
+            "Good."
+          ],
+          "markup": {}
+        },
+        {
+          "app_rate": 1,
+          "expansion": [
+            "Fine, fine."
+          ],
+          "markup": {}
+        },
+        {
+          "app_rate": 1,
+          "expansion": [
+            "Good, good."
+          ],
+          "markup": {}
+        },
+        {
+          "app_rate": 1,
+          "expansion": [
+            "Not too bad."
+          ],
+          "markup": {}
+        },
+        {
+          "app_rate": 1,
+          "expansion": [
+            "Pretty good."
+          ],
+          "markup": {}
+        }
+      ]
+    },
+    "answer how are you negatively": {
+      "complete": true,
+      "deep": false,
+      "markup": {
+        "Moves": [
+          "say something negative"
+        ]
+      },
+      "rules": [
+        {
+          "app_rate": 1,
+          "expansion": [
+            "Things are ",
+            "[[negative adj]]",
+            "[[expressive punct]]"
+          ],
+          "markup": {}
+        },
+        {
+          "app_rate": 1,
+          "expansion": [
+            "I'm not feeling ",
+            "[[positive adj]]",
+            ", honestly."
+          ],
+          "markup": {}
+        }
+      ]
+    },
+    "answer how are you positively": {
+      "complete": true,
+      "deep": false,
+      "markup": {
+        "Moves": [
+          "say something positive"
+        ]
+      },
+      "rules": [
+        {
+          "app_rate": 1,
+          "expansion": [
+            "Things are ",
+            "[[positive adj]]",
+            "[[expressive punct]]"
+          ],
+          "markup": {}
+        },
+        {
+          "app_rate": 1,
+          "expansion": [
+            "Everything is ",
+            "[[positive adj]]",
+            "[[expressive punct]]"
+          ],
+          "markup": {}
+        }
+      ]
+    },
+    "answer how are you to a stranger": {
+      "complete": true,
+      "deep": false,
+      "markup": {
+        "Preconditions": [
+          "lambda speaker, interlocutor: interlocutor not in speaker.relationships"
+        ]
+      },
+      "rules": [
+        {
+          "app_rate": 1,
+          "expansion": [
+            "[[just answer how are you to a stranger]]"
+          ],
+          "markup": {}
+        },
+        {
+          "app_rate": 1,
+          "expansion": [
+            "[[answer how are you to a stranger and ask the same to them]]"
+          ],
+          "markup": {}
+        }
+      ]
+    },
+    "answer how are you to a stranger and ask the same to them": {
+      "complete": true,
+      "deep": false,
+      "markup": {
+        "PushObligation": [
+          "answer how are you"
+        ],
+        "ViolationConditions": [
+          "repeated resolved question<--lambda conversation: conversation.earlier_move(conversation.speaker, 'ask how are you')"
+        ]
+      },
+      "rules": [
+        {
+          "app_rate": 1,
+          "expansion": [
+            "[[answer how are you generically]]",
+            " Yourself?"
+          ],
+          "markup": {}
+        },
+        {
+          "app_rate": 1,
+          "expansion": [
+            "[[answer how are you generically]]",
+            " How about you?"
+          ],
+          "markup": {}
+        },
+        {
+          "app_rate": 1,
+          "expansion": [
+            "[[answer how are you generically]]",
+            " You?"
+          ],
+          "markup": {}
+        }
+      ]
+    },
+    "answer how are you to someone you know": {
+      "complete": true,
+      "deep": false,
+      "markup": {},
+      "rules": [
+        {
+          "app_rate": 1,
+          "expansion": [
+            "[[just answer how are you to someone you know]]"
+          ],
+          "markup": {}
+        },
+        {
+          "app_rate": 1,
+          "expansion": [
+            "[[answer how are you to someone you know and ask the same to them]]"
+          ],
+          "markup": {}
+        }
+      ]
+    },
+    "answer how are you to someone you know and ask the same to them": {
+      "complete": true,
+      "deep": false,
+      "markup": {
+        "PushObligation": [
+          "answer how are you"
+        ]
+      },
+      "rules": [
+        {
+          "app_rate": 1,
+          "expansion": [
+            "[[just answer how are you to someone you know]]",
+            " ",
+            "[[ask someone you know how are you]]"
+          ],
+          "markup": {}
+        }
+      ]
+    },
+    "ask a stranger how are you": {
+      "complete": true,
+      "deep": false,
+      "markup": {
+        "Preconditions": [
+          "lambda speaker, interlocutor: interlocutor not in speaker.relationships"
+        ]
+      },
+      "rules": [
+        {
+          "app_rate": 1,
+          "expansion": [
+            "How ya doing?"
+          ],
+          "markup": {}
+        }
+      ]
+    },
+    "ask about the weather": {
+      "complete": true,
+      "deep": false,
+      "markup": {
+        "Moves": [
+          "ask about the weather"
+        ],
+        "Preconditions": [
+          "lambda conversation: not conversation.earlier_move(conversation.speaker, 'ask about the weather')",
+          "lambda conversation: not conversation.earlier_move(conversation.speaker, 'assert about the weather')"
+        ],
+        "PushObligation": [
+          "assert about the weather"
+        ],
+        "PushTopic": [
+          "weather"
+        ],
+        "ViolationConditions": [
+          "awkward rehash<--lambda conversation: conversation.earlier_move('either', 'ask about the weather')"
+        ]
+      },
+      "rules": [
+        {
+          "app_rate": 1,
+          "expansion": [
+            "[[generally ask about the weather]]"
+          ],
+          "markup": {}
+        },
+        {
+          "app_rate": 1,
+          "expansion": [
+            "[[negatively ask about the weather]]"
+          ],
+          "markup": {}
+        },
+        {
+          "app_rate": 1,
+          "expansion": [
+            "[[positively ask about the weather]]"
+          ],
+          "markup": {}
+        }
+      ]
+    },
+    "ask anyone how are you": {
+      "complete": true,
+      "deep": false,
+      "markup": {},
+      "rules": [
+        {
+          "app_rate": 1,
+          "expansion": [
+            "How's it going?"
+          ],
+          "markup": {}
+        }
+      ]
+    },
+    "ask how are you": {
+      "complete": true,
+      "deep": false,
+      "markup": {
+        "Moves": [
+          "ask how are you"
+        ],
+        "PushObligation": [
+          "answer how are you"
+        ],
+        "ViolationConditions": [
+          "repeated resolved question<--lambda conversation: conversation.earlier_move(conversation.speaker, 'ask how are you')"
+        ]
+      },
+      "rules": [
+        {
+          "app_rate": 1,
+          "expansion": [
+            "[[ask someone you know how are you]]"
+          ],
+          "markup": {}
+        },
+        {
+          "app_rate": 1,
+          "expansion": [
+            "[[ask a stranger how are you]]"
+          ],
+          "markup": {}
+        },
+        {
+          "app_rate": 1,
+          "expansion": [
+            "[[ask anyone how are you]]"
+          ],
+          "markup": {}
+        }
+      ]
+    },
+    "ask someone you know how are you": {
+      "complete": true,
+      "deep": false,
+      "markup": {
+        "Preconditions": [
+          "lambda speaker, interlocutor: interlocutor in speaker.relationships"
+        ],
+        "ViolationConditions": [
+          "repeated resolved question<--lambda conversation: conversation.earlier_move(conversation.speaker, 'ask how are you')"
+        ]
+      },
+      "rules": [
+        {
+          "app_rate": 1,
+          "expansion": [
+            "How have you been?"
+          ],
+          "markup": {}
+        },
+        {
+          "app_rate": 1,
+          "expansion": [
+            "How's everything going?"
+          ],
+          "markup": {}
+        },
+        {
+          "app_rate": 1,
+          "expansion": [
+            "How are things?"
+          ],
+          "markup": {}
+        },
+        {
+          "app_rate": 1,
+          "expansion": [
+            "How are you?"
+          ],
+          "markup": {}
+        }
+      ]
+    },
+    "assert about the weather": {
+      "complete": true,
+      "deep": false,
+      "markup": {
+        "Moves": [
+          "assert about the weather"
+        ],
+        "Preconditions": [
+          "lambda conversation: not conversation.earlier_move(conversation.speaker, 'ask about the weather')",
+          "lambda conversation: not conversation.earlier_move(conversation.speaker, 'assert about the weather')"
+        ],
+        "PushTopic": [
+          "weather"
+        ]
+      },
+      "rules": [
+        {
+          "app_rate": 1,
+          "expansion": [
+            "[[bring up the weather]]"
+          ],
+          "markup": {}
+        },
+        {
+          "app_rate": 1,
+          "expansion": [
+            "[[respond about the weather]]"
+          ],
+          "markup": {}
+        }
+      ]
+    },
+    "bring up the weather": {
+      "complete": true,
+      "deep": false,
+      "markup": {
+        "Preconditions": [
+          "lambda conversation: not conversation.already_a_topic('weather')"
+        ],
+        "PushObligation": [
+          "assert about the weather"
+        ],
+        "PushTopic": [
+          "weather"
+        ]
+      },
+      "rules": [
+        {
+          "app_rate": 1,
+          "expansion": [
+            "[[negatively assert about the weather]]"
+          ],
+          "markup": {}
+        },
+        {
+          "app_rate": 1,
+          "expansion": [
+            "[[positively assert about the weather]]"
+          ],
+          "markup": {}
+        }
+      ]
+    },
+    "end conversation": {
+      "complete": true,
+      "deep": true,
+      "markup": {
+        "Moves": [
+          "end conversation"
+        ],
+        "PushObligation": [
+          "say goodbye"
+        ]
+      },
+      "rules": [
+        {
+          "app_rate": 1,
+          "expansion": [
+            "While, I have to go. You have a good one."
+          ],
+          "markup": {}
+        }
+      ]
+    },
+    "express suprise at having the same name": {
+      "complete": true,
+      "deep": false,
+      "markup": {},
+      "rules": [
+        {
+          "app_rate": 1,
+          "expansion": [
+            "Ah, great name then",
+            "[[expressive punct]]"
+          ],
+          "markup": {}
+        },
+        {
+          "app_rate": 1,
+          "expansion": [
+            "[[Positive adj]]",
+            " name ya got there."
+          ],
+          "markup": {}
+        }
+      ]
+    },
+    "express that you have the same name": {
+      "complete": true,
+      "deep": false,
+      "markup": {},
+      "rules": [
+        {
+          "app_rate": 1,
+          "expansion": [
+            "I'm also ",
+            "[speaker.first_name]",
+            ", ",
+            "[speaker.name]",
+            "."
+          ],
+          "markup": {}
+        },
+        {
+          "app_rate": 1,
+          "expansion": [
+            "I'm also ",
+            "[speaker.first_name]",
+            "."
+          ],
+          "markup": {}
+        },
+        {
+          "app_rate": 1,
+          "expansion": [
+            "I'm also a ",
+            "[speaker.first_name]",
+            "."
+          ],
+          "markup": {}
+        },
+        {
+          "app_rate": 1,
+          "expansion": [
+            "That's my name too."
+          ],
+          "markup": {}
+        },
+        {
+          "app_rate": 1,
+          "expansion": [
+            "That's my name too. ",
+            "[subject.name]",
+            "."
+          ],
+          "markup": {}
+        }
+      ]
+    },
+    "expressive punct": {
+      "complete": true,
+      "deep": false,
+      "markup": {},
+      "rules": [
+        {
+          "app_rate": 5,
+          "expansion": [
+            "."
+          ],
+          "markup": {}
+        },
+        {
+          "app_rate": 2,
+          "expansion": [
+            "!"
+          ],
+          "markup": {
+            "Preconditions": [
+              "lambda speaker: speaker.personality.high_e"
+            ]
+          }
+        },
+        {
+          "app_rate": 2,
+          "expansion": [
+            "..."
+          ],
+          "markup": {
+            "Preconditions": [
+              "lambda speaker: speaker.personality.low_e"
+            ]
+          }
+        }
+      ]
+    },
+    "generally ask about the weather": {
+      "complete": true,
+      "deep": false,
+      "markup": {},
+      "rules": [
+        {
+          "app_rate": 1,
+          "expansion": [
+            "That weather ",
+            "[[today/tonight]]",
+            ", ",
+            "[[agreement invitation marker]]",
+            "?"
+          ],
+          "markup": {}
+        },
+        {
+          "app_rate": 1,
+          "expansion": [
+            "How about that weather?"
+          ],
+          "markup": {}
+        },
+        {
+          "app_rate": 1,
+          "expansion": [
+            "What do you think about this weather?"
+          ],
+          "markup": {}
+        },
+        {
+          "app_rate": 1,
+          "expansion": [
+            "How do you like this weather?"
+          ],
+          "markup": {}
+        },
+        {
+          "app_rate": 1,
+          "expansion": [
+            "How's the weather out there?"
+          ],
+          "markup": {
+            "Preconditions": [
+              "lambda speaker, interlocutor: speaker.routine.working and not interlocutor.routine.working"
+            ]
+          }
+        }
+      ]
+    },
+    "goodbye": {
+      "complete": true,
+      "deep": true,
+      "markup": {
+        "Moves": [
+          "say goodbye"
+        ],
+        "PushObligation": [
+          "say goodbye"
+        ]
+      },
+      "rules": [
+        {
+          "app_rate": 1,
+          "expansion": [
+            "Goodbye."
+          ],
+          "markup": {}
+        },
+        {
+          "app_rate": 1,
+          "expansion": [
+            "See you around."
+          ],
+          "markup": {}
+        }
+      ]
+    },
+    "greet": {
+      "complete": true,
+      "deep": true,
+      "markup": {
+        "Moves": [
+          "greet"
+        ]
+      },
+      "rules": [
+        {
+          "app_rate": 1,
+          "expansion": [
+            "[[greet first]]"
+          ],
+          "markup": {}
+        },
+        {
+          "app_rate": 1,
+          "expansion": [
+            "[[greet back]]"
+          ],
+          "markup": {}
+        }
+      ]
+    },
+    "greet back": {
+      "complete": true,
+      "deep": false,
+      "markup": {
+        "Moves": [
+          "greet back"
+        ],
+        "ViolationConditions": [
+          "unprompted greet back<--lambda conversation: conversation.no_obligation(conversation.speaker, 'greet back')"
+        ]
+      },
+      "rules": [
+        {
+          "app_rate": 3,
+          "expansion": [
+            "[[Greeting word]]",
+            "[[expressive punct]]"
+          ],
+          "markup": {
+            "Preconditions": [
+              "lambda speaker, interlocutor: speaker.knows(interlocutor, 'first name')"
+            ]
+          }
+        },
+        {
+          "app_rate": 4,
+          "expansion": [
+            "Oh, ",
+            "[[greeting word]]",
+            "[[expressive punct]]"
+          ],
+          "markup": {}
+        },
+        {
+          "app_rate": 1,
+          "expansion": [
+            "[[Greeting word]]",
+            ", ",
+            "[[interlocutor first name]]",
+            "[[expressive punct]]"
+          ],
+          "markup": {}
+        },
+        {
+          "app_rate": 1,
+          "expansion": [
+            "Oh, ",
+            "[[greeting word]]",
+            ", ",
+            "[[interlocutor first name]]",
+            "[[expressive punct]]"
+          ],
+          "markup": {}
+        }
+      ]
+    },
+    "greet first": {
+      "complete": true,
+      "deep": false,
+      "markup": {
+        "PushObligation": [
+          "greet back"
+        ]
+      },
+      "rules": [
+        {
+          "app_rate": 3,
+          "expansion": [
+            "[[Greeting word]]",
+            "[[expressive punct]]"
+          ],
+          "markup": {}
+        },
+        {
+          "app_rate": 5,
+          "expansion": [
+            "[[Greeting word]]",
+            ", ",
+            "[[interlocutor first name]]",
+            "[[expressive punct]]"
+          ],
+          "markup": {}
+        }
+      ]
+    },
+    "greeting word": {
+      "complete": true,
+      "deep": false,
+      "markup": {},
+      "rules": [
+        {
+          "app_rate": 1,
+          "expansion": [
+            "hi"
+          ],
+          "markup": {}
+        },
+        {
+          "app_rate": 1,
+          "expansion": [
+            "hello"
+          ],
+          "markup": {}
+        },
+        {
+          "app_rate": 1,
+          "expansion": [
+            "hey"
+          ],
+          "markup": {}
+        },
+        {
+          "app_rate": 1,
+          "expansion": [
+            "greetings"
+          ],
+          "markup": {}
+        }
+      ]
+    },
+    "interlocutor first name": {
+      "complete": true,
+      "deep": false,
+      "markup": {
+        "Preconditions": [
+          "lambda speaker, interlocutor: speaker.knows(interlocutor, 'first name')"
+        ]
+      },
+      "rules": [
+        {
+          "app_rate": 1,
+          "expansion": [
+            "[interlocutor.first_name]"
+          ],
+          "markup": {}
+        }
+      ]
+    },
+    "introduce self": {
+      "complete": true,
+      "deep": true,
+      "markup": {
+        "Moves": [
+          "introduce self"
+        ]
+      },
+      "rules": [
+        {
+          "app_rate": 1,
+          "expansion": [
+            "[[introduce self first]]"
+          ],
+          "markup": {}
+        },
+        {
+          "app_rate": 1,
+          "expansion": [
+            "[[introduce self back]]"
+          ],
+          "markup": {}
+        }
+      ]
+    },
+    "introduce self after preliminaries": {
+      "complete": true,
+      "deep": false,
+      "markup": {},
+      "rules": [
+        {
+          "app_rate": 1,
+          "expansion": [
+            "Name's ",
+            "[speaker.first_name]",
+            ", by the way."
+          ],
+          "markup": {
+            "Preconditions": [
+              "lambda speaker: speaker.male"
+            ]
+          }
+        },
+        {
+          "app_rate": 1,
+          "expansion": [
+            "I'm ",
+            "[speaker.first_name]",
+            ", by the way."
+          ],
+          "markup": {}
+        }
+      ]
+    },
+    "introduce self back": {
+      "complete": true,
+      "deep": false,
+      "markup": {
+        "Moves": [
+          "introduce self back"
+        ],
+        "Preconditions": [
+          "lambda conversation: conversation.earlier_move(conversation.interlocutor, 'introduce self')"
+        ],
+        "PushObligation": [
+          "say nice to meet you"
+        ],
+        "ViolationConditions": [
+          "awkward rehash<--lambda conversation: conversation.earlier_move(conversation.speaker, 'introduce self')"
+        ]
+      },
+      "rules": [
+        {
+          "app_rate": 1,
+          "expansion": [
+            "[[introduce self back if you have different names]]"
+          ],
+          "markup": {}
+        },
+        {
+          "app_rate": 1,
+          "expansion": [
+            "[[introduce self back if you have the same name]]"
+          ],
+          "markup": {}
+        }
+      ]
+    },
+    "introduce self back if you have different names": {
+      "complete": true,
+      "deep": false,
+      "markup": {},
+      "rules": [
+        {
+          "app_rate": 1,
+          "expansion": [
+            "[[nice to meet you]]",
+            " I'm ",
+            "[speaker.first_name]",
+            "."
+          ],
+          "markup": {}
+        },
+        {
+          "app_rate": 1,
+          "expansion": [
+            "I'm ",
+            "[speaker.first_name]",
+            "."
+          ],
+          "markup": {}
+        },
+        {
+          "app_rate": 1,
+          "expansion": [
+            "[speaker.first_name]",
+            "."
+          ],
+          "markup": {}
+        },
+        {
+          "app_rate": 1,
+          "expansion": [
+            "[[introduce self generally]]"
+          ],
+          "markup": {}
+        }
+      ]
+    },
+    "introduce self back if you have the same name": {
+      "complete": true,
+      "deep": false,
+      "markup": {
+        "Preconditions": [
+          "lambda speaker, interlocutor: speaker.first_name == interlocutor.first_name"
+        ]
+      },
+      "rules": [
+        {
+          "app_rate": 1,
+          "expansion": [
+            "[[express suprise at having the same name]]",
+            " ",
+            "[[express that you have the same name]]"
+          ],
+          "markup": {}
+        }
+      ]
+    },
+    "introduce self first": {
+      "complete": true,
+      "deep": false,
+      "markup": {
+        "Preconditions": [
+          "lambda conversation: not conversation.earlier_move('either', 'introduce self')"
+        ],
+        "PushObligation": [
+          "introduce self back"
+        ]
+      },
+      "rules": [
+        {
+          "app_rate": 1,
+          "expansion": [
+            "[[introduce self after preliminaries]]"
+          ],
+          "markup": {}
+        },
+        {
+          "app_rate": 1,
+          "expansion": [
+            "My name is ",
+            "[speaker.first_name]",
+            "."
+          ],
+          "markup": {}
+        },
+        {
+          "app_rate": 1,
+          "expansion": [
+            "[[introduce self generally]]"
+          ],
+          "markup": {}
+        }
+      ]
+    },
+    "introduce self generally": {
+      "complete": true,
+      "deep": false,
+      "markup": {},
+      "rules": [
+        {
+          "app_rate": 1,
+          "expansion": [
+            "I'm ",
+            "[speaker.first_name]",
+            "."
+          ],
+          "markup": {}
+        },
+        {
+          "app_rate": 1,
+          "expansion": [
+            "Name's ",
+            "[speaker.last_name]",
+            ", ",
+            "[speaker.name]",
+            "."
+          ],
+          "markup": {
+            "Preconditions": [
+              "lambda speaker: speaker.male"
+            ]
+          }
+        }
+      ]
+    },
+    "just answer how are you to a stranger": {
+      "complete": true,
+      "deep": false,
+      "markup": {},
+      "rules": [
+        {
+          "app_rate": 1,
+          "expansion": [
+            "[[answer how are you generically]]"
+          ],
+          "markup": {}
+        }
+      ]
+    },
+    "just answer how are you to someone you know": {
+      "complete": true,
+      "deep": false,
+      "markup": {},
+      "rules": [
+        {
+          "app_rate": 1,
+          "expansion": [
+            "[[answer how are you generically]]"
+          ],
+          "markup": {}
+        },
+        {
+          "app_rate": 1,
+          "expansion": [
+            "[[answer how are you negatively]]"
+          ],
+          "markup": {}
+        },
+        {
+          "app_rate": 1,
+          "expansion": [
+            "[[answer how are you positively]]"
+          ],
+          "markup": {}
+        }
+      ]
+    },
+    "negative adj": {
+      "complete": true,
+      "deep": false,
+      "markup": {},
+      "rules": [
+        {
+          "app_rate": 5,
+          "expansion": [
+            "bad"
+          ],
+          "markup": {}
+        },
+        {
+          "app_rate": 1,
+          "expansion": [
+            "horrible"
+          ],
+          "markup": {}
+        },
+        {
+          "app_rate": 1,
+          "expansion": [
+            "poor"
+          ],
+          "markup": {}
+        },
+        {
+          "app_rate": 1,
+          "expansion": [
+            "miserable"
+          ],
+          "markup": {}
+        },
+        {
+          "app_rate": 1,
+          "expansion": [
+            "rotten"
+          ],
+          "markup": {}
+        },
+        {
+          "app_rate": 1,
+          "expansion": [
+            "awful"
+          ],
+          "markup": {}
+        }
+      ]
+    },
+    "negatively ask about the weather": {
+      "complete": true,
+      "deep": false,
+      "markup": {
+        "Moves": [
+          "say something negative"
+        ],
+        "Preconditions": [
+          "lambda speaker: speaker.game.weather == 'bad' or speaker.personality.low_a"
+        ]
+      },
+      "rules": [
+        {
+          "app_rate": 1,
+          "expansion": [
+            "[[Negative adj]]",
+            " weather, ",
+            "[[agreement invitation marker]]",
+            "?"
+          ],
+          "markup": {}
+        },
+        {
+          "app_rate": 1,
+          "expansion": [
+            "[[Negative adj]]",
+            " weather ",
+            "[[today/tonight]]",
+            ", ",
+            "[[agreement invitation marker]]",
+            "?"
+          ],
+          "markup": {}
+        }
+      ]
+    },
+    "negatively assert about the weather": {
+      "complete": true,
+      "deep": false,
+      "markup": {
+        "Moves": [
+          "say something negative"
+        ],
+        "Preconditions": [
+          "lambda speaker: speaker.game.weather == 'bad' or speaker.personality.low_a"
+        ],
+        "ViolationConditions": [
+          "unbound 'thing is' anaphor<--lambda conversation: conversation.last_turn.did_not_address_topic('weather')"
+        ]
+      },
+      "rules": [
+        {
+          "app_rate": 1,
+          "expansion": [
+            "The weather is ",
+            "[[negative adj]]",
+            "."
+          ],
+          "markup": {}
+        },
+        {
+          "app_rate": 1,
+          "expansion": [
+            "It's ",
+            "[[negative adj]]",
+            "[[expressive punct]]"
+          ],
+          "markup": {}
+        }
+      ]
+    },
+    "nice to meet you": {
+      "complete": true,
+      "deep": true,
+      "markup": {
+        "Moves": [
+          "say nice to meet you"
+        ]
+      },
+      "rules": [
+        {
+          "app_rate": 1,
+          "expansion": [
+            "[[say nice to meet you first]]"
+          ],
+          "markup": {}
+        },
+        {
+          "app_rate": 1,
+          "expansion": [
+            "[[say nice to meet you back]]"
+          ],
+          "markup": {}
+        }
+      ]
+    },
+    "positive adj": {
+      "complete": true,
+      "deep": false,
+      "markup": {},
+      "rules": [
+        {
+          "app_rate": 1,
+          "expansion": [
+            "lovely"
+          ],
+          "markup": {}
+        },
+        {
+          "app_rate": 1,
+          "expansion": [
+            "good"
+          ],
+          "markup": {}
+        },
+        {
+          "app_rate": 1,
+          "expansion": [
+            "great"
+          ],
+          "markup": {}
+        },
+        {
+          "app_rate": 1,
+          "expansion": [
+            "wonderful"
+          ],
+          "markup": {}
+        },
+        {
+          "app_rate": 1,
+          "expansion": [
+            "excellent"
+          ],
+          "markup": {}
+        },
+        {
+          "app_rate": 1,
+          "expansion": [
+            "fantastic"
+          ],
+          "markup": {}
+        },
+        {
+          "app_rate": 1,
+          "expansion": [
+            "spectacular"
+          ],
+          "markup": {}
+        },
+        {
+          "app_rate": 1,
+          "expansion": [
+            "amazing"
+          ],
+          "markup": {}
+        },
+        {
+          "app_rate": 1,
+          "expansion": [
+            "nice"
+          ],
+          "markup": {}
+        }
+      ]
+    },
+    "positively ask about the weather": {
+      "complete": true,
+      "deep": false,
+      "markup": {
+        "Moves": [
+          "say something positive"
+        ],
+        "Preconditions": [
+          "lambda speaker: speaker.game.weather == 'good'"
+        ]
+      },
+      "rules": [
+        {
+          "app_rate": 1,
+          "expansion": [
+            "[[Positive adj]]",
+            " weather ",
+            "[[today/tonight]]",
+            ", ",
+            "[[agreement invitation marker]]",
+            "?"
+          ],
+          "markup": {}
+        },
+        {
+          "app_rate": 1,
+          "expansion": [
+            "[[Positive adj]]",
+            " weather, ",
+            "[[agreement invitation marker]]",
+            "?"
+          ],
+          "markup": {}
+        }
+      ]
+    },
+    "positively assert about the weather": {
+      "complete": true,
+      "deep": false,
+      "markup": {
+        "Moves": [
+          "say something positive"
+        ],
+        "Preconditions": [
+          "lambda speaker: speaker.game.weather == 'good'"
+        ]
+      },
+      "rules": [
+        {
+          "app_rate": 1,
+          "expansion": [
+            "We're having ",
+            "[[positive adj]]",
+            " weather ",
+            "[[today/tonight]]",
+            "."
+          ],
+          "markup": {}
+        },
+        {
+          "app_rate": 1,
+          "expansion": [
+            "The weather is ",
+            "[[positive adj]]",
+            "."
+          ],
+          "markup": {}
+        },
+        {
+          "app_rate": 1,
+          "expansion": [
+            "It's ",
+            "[[positive adj]]",
+            "[[expressive punct]]"
+          ],
+          "markup": {
+            "ViolationConditions": [
+              "unbound 'thing is' anaphor<--lambda conversation: conversation.last_turn.did_not_address_topic('weather')"
+            ]
+          }
+        }
+      ]
+    },
+    "reask about the weather": {
+      "complete": true,
+      "deep": false,
+      "markup": {
+        "Moves": [
+          "ask about the weather"
+        ],
+        "Preconditions": [
+          "lambda conversation: conversation.earlier_move(conversation.speaker, 'ask about the weather')"
+        ],
+        "PushObligation": [
+          "assert about the weather"
+        ]
+      },
+      "rules": [
+        {
+          "app_rate": 1,
+          "expansion": [
+            "But, yeah: ",
+            "[[ask about the weather]]"
+          ],
+          "markup": {}
+        },
+        {
+          "app_rate": 1,
+          "expansion": [
+            "But, really: ",
+            "[[ask about the weather]]"
+          ],
+          "markup": {}
+        }
+      ]
+    },
+    "reassert about the weather": {
+      "complete": true,
+      "deep": false,
+      "markup": {
+        "Moves": [
+          "assert about the weather"
+        ],
+        "Preconditions": [
+          "lambda conversation: conversation.earlier_move(conversation.speaker, 'assert about the weather')"
+        ]
+      },
+      "rules": [
+        {
+          "app_rate": 1,
+          "expansion": [
+            "[[Seriously/really/i mean it]]",
+            ", though: ",
+            "[[assert about the weather]]"
+          ],
+          "markup": {}
+        },
+        {
+          "app_rate": 1,
+          "expansion": [
+            "But ",
+            "[[seriously/really/i mean it]]",
+            ": ",
+            "[[assert about the weather]]"
+          ],
+          "markup": {}
+        }
+      ]
+    },
+    "request name": {
+      "complete": true,
+      "deep": true,
+      "markup": {
+        "Moves": [
+          "request name"
+        ],
+        "PushObligation": [
+          "introduce self"
+        ]
+      },
+      "rules": [
+        {
+          "app_rate": 1,
+          "expansion": [
+            "And who might you be?"
+          ],
+          "markup": {}
+        },
+        {
+          "app_rate": 1,
+          "expansion": [
+            "What's your name?"
+          ],
+          "markup": {}
+        }
+      ]
+    },
+    "respond about the weather": {
+      "complete": true,
+      "deep": false,
+      "markup": {},
+      "rules": [
+        {
+          "app_rate": 1,
+          "expansion": [
+            "[[negatively assert about the weather]]"
+          ],
+          "markup": {}
+        },
+        {
+          "app_rate": 1,
+          "expansion": [
+            "[[positively assert about the weather]]"
+          ],
+          "markup": {}
+        }
+      ]
+    },
+    "say nice to meet you back": {
+      "complete": true,
+      "deep": false,
+      "markup": {
+        "Preconditions": [
+          "lambda conversation: conversation.last_interlocutor_turn.performed_move('say nice to meet you')",
+          "lambda conversation: conversation.has_obligation(conversation.speaker, 'say nice to meet you')"
+        ]
+      },
+      "rules": [
+        {
+          "app_rate": 1,
+          "expansion": [
+            "It's ",
+            "[[positive adj]]",
+            " to meet you",
+            "[[expressive punct]]"
+          ],
+          "markup": {}
+        },
+        {
+          "app_rate": 1,
+          "expansion": [
+            "Pleasure."
+          ],
+          "markup": {}
+        }
+      ]
+    },
+    "say nice to meet you first": {
+      "complete": true,
+      "deep": false,
+      "markup": {
+        "Preconditions": [
+          "lambda conversation: not conversation.earlier_move('either', 'say nice to meet you')"
+        ]
+      },
+      "rules": [
+        {
+          "app_rate": 10,
+          "expansion": [
+            "Nice to meet you."
+          ],
+          "markup": {}
+        }
+      ]
+    },
+    "seriously/really/i mean it": {
+      "complete": true,
+      "deep": false,
+      "markup": {},
+      "rules": [
+        {
+          "app_rate": 1,
+          "expansion": [
+            "seriously"
+          ],
+          "markup": {}
+        },
+        {
+          "app_rate": 1,
+          "expansion": [
+            "truly"
+          ],
+          "markup": {}
+        },
+        {
+          "app_rate": 1,
+          "expansion": [
+            "really"
+          ],
+          "markup": {}
+        }
+      ]
+    },
+    "small talk": {
+      "complete": true,
+      "deep": true,
+      "markup": {
+        "Moves": [
+          "make small talk"
+        ]
+      },
+      "rules": [
+        {
+          "app_rate": 3,
+          "expansion": [
+            "[[talk about the weather]]"
+          ],
+          "markup": {}
+        },
+        {
+          "app_rate": 1,
+          "expansion": [
+            "[[talk about how we are doing]]"
+          ],
+          "markup": {}
+        }
+      ]
+    },
+    "talk about how we are doing": {
+      "complete": true,
+      "deep": false,
+      "markup": {},
+      "rules": [
+        {
+          "app_rate": 1,
+          "expansion": [
+            "[[ask how are you]]"
+          ],
+          "markup": {}
+        },
+        {
+          "app_rate": 1,
+          "expansion": [
+            "[[answer how are you]]"
+          ],
+          "markup": {}
+        }
+      ]
+    },
+    "talk about the weather": {
+      "complete": true,
+      "deep": false,
+      "markup": {
+        "AddressTopic": [
+          "weather"
+        ]
+      },
+      "rules": [
+        {
+          "app_rate": 1,
+          "expansion": [
+            "[[ask about the weather]]"
+          ],
+          "markup": {}
+        },
+        {
+          "app_rate": 1,
+          "expansion": [
+            "[[assert about the weather]]"
+          ],
+          "markup": {}
+        },
+        {
+          "app_rate": 1,
+          "expansion": [
+            "[[reask about the weather]]"
+          ],
+          "markup": {}
+        },
+        {
+          "app_rate": 1,
+          "expansion": [
+            "[[reassert about the weather]]"
+          ],
+          "markup": {}
+        }
+      ]
+    },
+    "today/tonight": {
+      "complete": true,
+      "deep": false,
+      "markup": {},
+      "rules": [
+        {
+          "app_rate": 1,
+          "expansion": [
+            "to",
+            "[speaker.game.time_of_day]"
+          ],
+          "markup": {}
+        }
+      ]
+    }
+  },
+  "system_vars": [
+    "[interlocutor.first_name]",
+    "[speaker.first_name]",
+    "[speaker.game.time_of_day]",
+    "[speaker.last_name]",
+    "[speaker.name]",
+    "[subject.name]"
+  ]
+}
