@@ -24,6 +24,7 @@ var MarkupSet = React.createClass({
             backgroundColor: "#5cb85c",
         }
         var tmp_sort = this.props.current_set
+        tmp_sort.sort()
         //console.log(tmp_sort.sort())
 
         for (var tag = 0; total_length > tag; tag++) {

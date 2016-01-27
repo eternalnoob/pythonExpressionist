@@ -8,7 +8,7 @@ var MarkupBar = React.createClass({
 
 
   render: function(){
-    //emty output array
+    //empty output array
     var output = []
     var total = Object.keys(this.props.total)
     //for loop iterates over the array which holds all markups
@@ -26,9 +26,6 @@ var MarkupBar = React.createClass({
 
       output.push(<MarkupSet onClickMarkup = {this.props.onClickMarkup}  onAddMarkup = {this.props.onAddMarkup} key={total[outer]} name={total[outer]} present_nt={present_nt} current_set={this.props.total[total[outer]]}/>)
     }
-
-
-
     return(
         <ButtonGroup className="btn-test">
           <Button className="grp_button" onClick={this.props.onAddMarkupSet} key="addnew"><Glyphicon

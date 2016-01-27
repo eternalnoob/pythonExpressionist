@@ -103,6 +103,9 @@ class Markup(object):
         else:
             return False
 
+    def __hash__(self):
+        return self.__str__().__hash__()
+
     def __str__(self):
         return self.tagset.__str__() + ":" + self.tag.__str__()
 
@@ -756,8 +759,8 @@ class PCFG(object):
 
     def add_new_markup_set(self, markupSet):
 
-        if not self.markup_class.get(str(markupSet.tagset)):
-            self.markup_class[str(markupSet.tagset)] = set()
+        if not self.markup_class.get(str(markupSet)):
+            self.markup_class[str(markupSet)] = set()
 
     def monte_carlo_export(self, nonterminal, filename, samplesscalar=1, ):
         """
@@ -820,6 +823,7 @@ class PCFG(object):
         markups = collections.defaultdict(set)
         # nonterminals are their own dictionaries
         nonterminals = {}
+        print(self.markup_class)
         for key, value in self.nonterminals.iteritems():
             temp = {}
             if len(value.rules) != 0:

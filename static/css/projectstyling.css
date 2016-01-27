@@ -5,10 +5,6 @@
 }
 
 .btn-test {
-    margin-right: -1000vw;
+    overflow-y: visible;
 }
 
-.muwrap {
-    width: 100%;
-    overflow: auto;
-}

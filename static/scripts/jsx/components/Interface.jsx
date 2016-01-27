@@ -201,20 +201,23 @@ var Interface = React.createClass({
         console.log("You are adding a single markup to set " + set)
         var markupTag = window.prompt("Please enter Markup Tag")
         if (markupTag != "") {
-            var object = {
-                "markupSet": set,
-                "tag": markupTag
+            //ensure tag does not exist in tagset
+            if (this.state.markups[set].indexOf(markupTag) === -1) {
+                var object = {
+                    "markupSet": set,
+                    "tag": markupTag
+                }
+                console.log(object)
+                ajax({
+                    url: '/markup/addtag',
+                    type: "POST",
+                    contentType: "application/json",
+                    data: JSON.stringify(object),
+                    async: false,
+                    cache: false
+                })
+                this.updateFromServer()
             }
-            console.log(object)
-            ajax({
-                url: '/markup/addtag',
-                type: "POST",
-                contentType: "application/json",
-                data: JSON.stringify(object),
-                async: false,
-                cache: false
-            })
-            this.updateFromServer()
         }
     },
 
@@ -374,10 +377,12 @@ var Interface = React.createClass({
                                exportList={this.exportList} saveGrammar={this.saveGrammar}
                                systemVars={this.state.system_vars}/>
                     <div className="muwrap">
-                        <MarkupBar className="markup-bar" onClickMarkup={this.handleMarkupClick}
-                                   onAddMarkup={this.handleMarkupAdd}
-                                   onAddMarkupSet={this.handleMarkupSetAdd} present={present_markups}
-                                   total={this.state.markups}/>
+                        <div className="show-y-wrapper">
+                            <MarkupBar className="markup-bar" onClickMarkup={this.handleMarkupClick}
+                                       onAddMarkup={this.handleMarkupAdd}
+                                       onAddMarkupSet={this.handleMarkupSetAdd} present={present_markups}
+                                       total={this.state.markups}/>
+                        </div>
                     </div>
                     {board}
                 </div>
