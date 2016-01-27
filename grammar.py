@@ -8,8 +8,8 @@ import itertools
 import collections
 import csv
 import json
-import os
 
+import operator
 # from IPython import embed
 
 
@@ -94,7 +94,8 @@ class Markup(object):
         """
         self.tag = tag
         self.tagset = tagset
-        # add ourself to our markup
+        self.time_of_definition_index = tagset.assign_time_of_definition_index()
+        #add ourself to our markup
 
     def __eq__(self, other):
         if isinstance(other, Markup):
@@ -118,6 +119,10 @@ class MarkupSet(object):
     def __init__(self, tagset):
         self.tagset = tagset
         self.markups = set()
+        # This increments as new tags are defined to allow sorting of drop-down
+        # menus in the authoring interface by time of tag definition, e.g.,
+        # an ordering with the most recently defined tags listed first
+        self.current_time_of_definition_index = -1
 
     def __eq__(self, other):
         if isinstance(other, MarkupSet):
@@ -138,6 +143,11 @@ class MarkupSet(object):
         """
         if markup.tagset == self.tagset and markup in self.markups:
             self.markups.remove(markup)
+
+    def assign_time_of_definition_index(self):
+        """Increment the current time-of-definition index and then return the result."""
+        self.current_time_of_definition_index += 1
+        return self.current_time_of_definition_index
 
     def __str__(self):
         return self.tagset.__str__()
@@ -319,6 +329,10 @@ class NonterminalSymbol(object):
             # if there are no rules for the nonterminal, return empty string
             return Rule(self, [TerminalSymbol(self.__str__())])
 
+    def n_terminal_expansions(self):
+        """Return the number of possible terminal expansions of this symbol."""
+        return sum(rule.n_terminal_expansions() for rule in self.rules)
+
     def __str__(self):
         return '[[' + self.tag.__str__() + ']]'
 
@@ -381,6 +395,10 @@ class TerminalSymbol(object):
 
     def exhaustively_and_nonprobabilistically_expand(self, markup):
         return self.expand(markup=markup)
+
+    def n_terminal_expansions(self):
+        """Return the number of possible terminal expansions of this symbol."""
+        return 1
 
     def __str__(self):
         return self.representation.__str__()
@@ -553,6 +571,15 @@ class Rule(object):
             a = list(self.markup)
             a.remove(markup)
             self.markup = set(a)
+
+    def n_terminal_expansions(self):
+        """Return the number of possible terminal expansions of this rule."""
+        # Since there's no product() built-in function in Python that works like sum()
+        # does, we have to use this ugly reduce thing
+        n_terminal_expansions = (
+            reduce(operator.mul, (symbol.n_terminal_expansions() for symbol in self.derivation), 1)
+        )
+        return n_terminal_expansions
 
 
 def parse_rule(rule_string):
@@ -827,12 +854,24 @@ class PCFG(object):
         total['markups'] = {}
         for markupset in self.markup_class:
             total['markups'][str(markupset)] = set()
-            for markups in self.markup_class[markupset]:
+            for tag_object in self.markup_class[markupset]:
                 if total['markups'].get(str(markupset)):
-                    total['markups'][str(markupset)] |= {markups.tag}
+                    total['markups'][str(markupset)] |= {tag_object}
                 else:
-                    total['markups'][str(markupset)] = {markups.tag}
-
+                    total['markups'][str(markupset)] = {tag_object}
+            # Sort these in reverse order of definition time, meaning the most recently
+            # defined mark-up shows up at the top of the drop-down; this makes it easy
+            # to find and attribute a new tag that you've just defined in the case of
+            # a very large tagset
+            total['markups'][str(markupset)] = sorted(
+                total['markups'][str(markupset)],
+                key=lambda tag: tag.time_of_definition_index, reverse=True
+            )
+            # Just save the strings for the tags for each of the tag objects
+            total['markups'][str(markupset)] = [
+                str(tag_object.tag) for tag_object in total['markups'][str(markupset)]
+            ]
+            
         total['system_vars'] = sorted(self.system_vars)
 
         def set_default(obj):
@@ -844,6 +883,10 @@ class PCFG(object):
 
         return json.dumps(total, default=set_default, sort_keys=True)
         # create the nonterminal dictonary
+
+    def n_possible_derivations(self):
+        """Return the number of possible terminal derivations that may yielded by this grammar."""
+        return sum(symbol.n_terminal_expansions() for symbol in self.nonterminals.values() if symbol.deep)
 
 
 def from_json(json_in):
@@ -884,6 +927,3 @@ def from_json(json_in):
         gram_res.add_new_markup_set(MarkupSet(markupSet))
 
     return gram_res
-
-
-g = from_json(open(os.path.join(os.path.dirname(__file__), 'talktown.json')).read())
