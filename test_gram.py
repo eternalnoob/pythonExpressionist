@@ -1,4 +1,7 @@
-from grammar import NonterminalSymbol, parse_rule, TerminalSymbol, PCFG, MarkupSet, Markup, from_json
+from Markups import Markup, MarkupSet
+from NonterminalSymbol import NonterminalSymbol
+from PCFG import parse_rule, PCFG
+
 test = PCFG()
 
 ask_day = NonterminalSymbol('ask_day', deep = True)

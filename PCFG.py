@@ -1,0 +1,363 @@
+"""
+Module designed to be used for the generation of generative grammars that focuses entirely on
+generating grammars as opposed to parsing them
+"""
+import collections
+import csv
+import json
+import re
+
+# from IPython import embed
+from NonterminalSymbol import NonterminalSymbol
+from Markups import Markup, MarkupSet
+from Terminals import TerminalSymbol, SystemVar
+
+N_RULES_FIRED = 0
+
+
+def parse_rule(rule_string):
+    """
+    function parses a string and returns the generation represented by that string
+    :param rule_string: the string representing the rule to be parsed
+    :type rule_string: string
+    :returns: list[symbols]
+    """
+
+    # this regex is a pain but it matches strings of either [[...]] or [...]
+    split_list = re.split('(\[\[[^\[{2}]+\]\]|\[[^\]]+])', rule_string)
+    # remove all empty strings
+    split_list = filter(None, split_list)
+
+    derivation = []
+    for token in split_list:
+        brackets = token.count("[")
+        stripped = token.lstrip("[").rstrip("]")
+
+        if brackets == 2:
+            derivation.append(NonterminalSymbol(stripped))
+        elif brackets == 1:
+            derivation.append(SystemVar(stripped))
+        else:
+            derivation.append(TerminalSymbol(stripped))
+    return derivation
+
+
+class PCFG(object):
+    """
+    Driver class for our PCFG, allows us to index our nonterminals and
+    system variables so that the user can more easily modify them in real time
+    Also allows us to selectively expand NonterminalSymbols to see all of their productions
+    """
+
+    def __init__(self, monte_carlo=False):
+        self.nonterminals = {}
+        self.system_vars = []
+        self.markup_class = {}
+        self.monte_carlo = monte_carlo  # Whether export will rely on a Monte Carlo derivation procedure
+
+    def add_nonterminal(self, nonterminal):
+        """ add a nonterminal to our grammar"""
+        if not self.nonterminals.get(str(nonterminal.tag)):
+            self.nonterminals[str(nonterminal.tag)] = nonterminal
+        # this accomodates the recursive definition of nonterminals
+        for markups in list(nonterminal.markup):
+            self.add_markup(nonterminal, markups)
+
+    def add_rule(self, nonterminal, derivation, application_rate=1):
+        """
+        add a rule to a nonterminal
+        recursion makes this a paaaain
+        problems arise with associating nonterminals that have the same tag with their correct
+        nonterminal representation within the PCFG class nonterminals[] list
+        so we have to do this manually with each token in derivation
+        or else we end up with nonterminals that have the same tag but do not have the same
+        productions associated with them
+        """
+        nonterm_add = self.nonterminals.get(str(nonterminal.tag))
+        if nonterm_add:
+            new_derivation = []
+            for token in derivation:
+                if isinstance(token, NonterminalSymbol):
+                    if self.nonterminals.get(token.tag):
+                        new_derivation.append(self.nonterminals.get(token.tag))
+                    else:
+                        self.add_nonterminal(token)
+                        new_derivation.append(token)
+                elif isinstance(token, SystemVar) and token not in self.system_vars:
+                    self.system_vars.append(token)
+                    new_derivation.append(token)
+                else:
+                    new_derivation.append(token)
+
+            nonterm_add.add_rule(new_derivation, application_rate)
+
+    def remove_rule(self, nonterminal, derivation):
+        """remove a rule from a nonterminal"""
+        self.nonterminals.get(str(nonterminal.tag)).remove_rule(derivation)
+
+    def remove_rule_by_index(self, nonterminal, rule_index):
+        """ remove a rule from a nonterminal by its index"""
+        self.nonterminals.get(str(nonterminal.tag)).remove_by_index(rule_index)
+
+    def expand(self, nonterminal):
+        """expand a given nonterminal"""
+        return self.nonterminals.get(str(nonterminal.tag)).expand(markup=set())
+
+    def modify_application_rate(self, nonterminal, rule_index, application_rate):
+        """modify application_rate for the given nonterminal and derivation"""
+        rules = self.nonterminals.get(str(nonterminal.tag)).rules
+        rules[rule_index].modify_application_rate(application_rate)
+        self.nonterminals.get(str(nonterminal.tag))._fit_probability_distribution()
+
+    def monte_carlo_expand(self, nonterminal, samplesscalar=1):
+        """
+        performs monte_carlo_expand on a given nonterminal
+        returns a list of size len(nonterminal.rules)*samplesscalar(no longer true, now size can
+        vary depending on if every possible production was sampled
+        """
+        return self.nonterminals[nonterminal.tag].monte_carlo_expand(samplesscalar)
+
+    def exhaustively_and_nonprobabilistically_expand(self, nonterminal):
+        """Exhaustively and nonprobabilistically expands a nonterminal, producing one of each possible derivation."""
+        return self.nonterminals[nonterminal.tag].exhaustively_and_nonprobabilistically_expand()
+
+    def set_deep(self, nonterminal, truthy):
+        self.nonterminals[str(nonterminal.tag)].set_deep(truthy)
+
+    def add_markup(self, nonterminal, markup):
+        """
+        add markup to an existing nonterminal
+        :type markup: Markups.Markup
+        """
+        if self.nonterminals.get(str(nonterminal.tag)):
+            if not self.markup_class.get(str(markup.tagset)):
+                self.markup_class[str(markup.tagset)] = set()
+            self.markup_class[str(markup.tagset)].add(markup)
+            self.nonterminals.get(str(nonterminal.tag)).add_markup(markup)
+
+    def add_rule_markup(self, nonterminal, rule, markup):
+        """
+        add a markup to a specific rule in a nonterminal
+        will add it to the PCFG's markup_class as well
+        nonterminal is the nonterminal we are going to change,
+        rule holds the index of the rule we are changing
+        markup holds the markup we are adding
+        """
+        self.add_unused_markup(markup)
+        self.nonterminals.get(str(nonterminal.tag)).rules[rule].add_markup(markup)
+
+    def remove_rule_markup(self, nonterminal, rule, markup):
+        """
+        remove occurence of markup from a given rule
+        """
+        self.nonterminals.get(str(nonterminal.tag)).rules[rule].remove_markup(markup)
+
+    def toggle_rule_markup(self, nonterminal, rule, markup):
+        if markup in list(self.nonterminals.get(str(nonterminal.tag)).rules[rule].markup):
+            print("removing rule markup")
+            self.remove_rule_markup(nonterminal, rule, markup)
+        else:
+            print("adding rule markup")
+            self.add_rule_markup(nonterminal, rule, markup)
+
+    def remove_markup(self, nonterminal, markup):
+        """
+        add markup to an existing nonterminal
+        :type markup: Markups.Markup
+        """
+        nonterminal = self.nonterminals.get(str(nonterminal.tag))
+        if nonterminal:
+            nonterminal.remove_markup(markup)
+
+    def toggle_markup(self, nonterminal, markup):
+        if markup in list(self.nonterminals.get(str(nonterminal.tag)).markup):
+            self.remove_markup(nonterminal, markup)
+            print "removing markup"
+        else:
+            if str(nonterminal.tag) in self.nonterminals:
+                print "adding markup"
+                self.add_markup(nonterminal, markup)
+            else:
+                print('nonterminal not found!')
+
+    def add_unused_markup(self, markup):
+
+        if not self.markup_class.get(str(markup.tagset)):
+            self.markup_class[str(markup.tagset)] = set()
+
+        self.markup_class[str(markup.tagset)].add(markup)
+
+    def add_new_markup_set(self, markupSet):
+
+        if not self.markup_class.get(str(markupSet)):
+            self.markup_class[str(markupSet)] = set()
+
+    def monte_carlo_export(self, nonterminal, filename, samplesscalar=1, ):
+        """
+        returns a tab seperated value list of productions, duplicates removed.
+        one thing I need to change is to output the set of markup in a nicer fashion
+        """
+        expansion = collections.Counter(sorted(self.monte_carlo_expand(nonterminal, samplesscalar)))
+        with open(filename, 'a') as csvfile:
+            row_writer = csv.writer(csvfile, delimiter='\t', quotechar='|', quoting=
+            csv.QUOTE_MINIMAL)
+            prob_range = 0
+            for deriv in expansion:
+                rng_interval = float(expansion[deriv]) / sum(expansion.values())
+                rng_max = prob_range + rng_interval
+                temp_prob = [prob_range, rng_max]
+                row_writer.writerow(
+                    [nonterminal, str(deriv.expansion),
+                     '^'.join(str(annotation) for annotation in list(deriv.markup)),
+                     [prob_range, rng_max]]
+                )
+                prob_range += rng_interval
+
+    def exhaustively_and_nonprobabilistically_export(self, nonterminal, filename):
+        """Append to a tab-separated file lines specifying each of the templated lines of dialogue that
+        may be yielded by each of the possible terminal expansions of nonterminal.
+        """
+        all_possible_expansions_of_this_symbol = (
+            self.exhaustively_and_nonprobabilistically_expand(nonterminal=nonterminal)
+        )
+        with open(filename, 'a') as export_tsv_file:
+            row_writer = csv.writer(
+                export_tsv_file, delimiter='\t', quotechar='|', quoting=csv.QUOTE_MINIMAL
+            )
+            for intermediate_derivation_object in all_possible_expansions_of_this_symbol:
+                row_writer.writerow(
+                    [nonterminal, str(intermediate_derivation_object.expansion),
+                     '^'.join(str(annotation) for annotation in list(intermediate_derivation_object.markup)),
+                     ['N/A', 'N/A']]  # We write 'N/A' here to indicate that we did not expand probabilistically
+                )
+
+    def export_all(self, filename):
+        with open(filename, 'w') as tsv_export_file:
+            row_writer = csv.writer(
+                tsv_export_file, delimiter='\t', quotechar='|', quoting=csv.QUOTE_MINIMAL
+            )
+            header = ['Top-level Symbol', 'Expansion', 'Markup', 'Probability']
+            row_writer.writerow(header)
+        for nonterminal in self.nonterminals.itervalues():
+            if nonterminal.deep:
+                print "Expanding top-level symbol {}".format(nonterminal)
+                if self.monte_carlo:
+                    self.monte_carlo_export(nonterminal, filename)
+                else:
+                    self.exhaustively_and_nonprobabilistically_export(nonterminal=nonterminal, filename=filename)
+
+    def to_json(self):
+        # total represents our final dictionary we will conver to JSON
+        total = {}
+        # use defaultdict as it allows us to assume they are sets
+        markups = collections.defaultdict(set)
+        # nonterminals are their own dictionaries
+        nonterminals = {}
+        print(self.markup_class)
+        for key, value in self.nonterminals.iteritems():
+            temp = {}
+            if len(value.rules) != 0:
+                value.complete = True
+            else:
+                value.complete = False
+            temp['deep'] = value.deep
+            temp['complete'] = value.complete
+            rules_list = []
+            for rules in value.rules:
+                rule_mu_dict = collections.defaultdict(set)
+
+                # createJSON representation for individual rule markup
+                for markup in rules.markup:
+                    rule_mu_dict[markup.tagset.__str__()] |= {markup.tag}
+                    markups[markup.tagset.__str__()] |= {markup.tag}
+
+                rules_list.append({'expansion': rules.derivation_json(), 'app_rate': rules.application_rate,
+                                   'markup': rule_mu_dict})
+            temp['rules'] = rules_list
+
+            markup_dict = collections.defaultdict(set)
+            for markup in value.markup:
+                markup_dict[markup.tagset.__str__()] |= {markup.tag}
+                markups[markup.tagset.__str__()] |= {markup.tag}
+
+            temp['markup'] = markup_dict
+            nonterminals[value.tag.__str__()] = temp
+
+        total['nonterminals'] = nonterminals
+
+        total['markups'] = {}
+        for markupset in self.markup_class:
+            total['markups'][str(markupset)] = set()
+            for tag_object in self.markup_class[markupset]:
+                if total['markups'].get(str(markupset)):
+                    total['markups'][str(markupset)] |= {tag_object}
+                else:
+                    total['markups'][str(markupset)] = {tag_object}
+            # Sort these in reverse order of definition time, meaning the most recently
+            # defined mark-up shows up at the top of the drop-down; this makes it easy
+            # to find and attribute a new tag that you've just defined in the case of
+            # a very large tagset
+            total['markups'][str(markupset)] = sorted(
+                total['markups'][str(markupset)],
+                key=lambda tag: tag.time_of_definition_index, reverse=True
+            )
+            # Just save the strings for the tags for each of the tag objects
+            total['markups'][str(markupset)] = [
+                str(tag_object.tag) for tag_object in total['markups'][str(markupset)]
+                ]
+
+        total['system_vars'] = sorted(self.system_vars)
+
+        def set_default(obj):
+            if isinstance(obj, set):
+                return list(obj)
+            if isinstance(obj, SystemVar):
+                return str(obj)
+            raise TypeError
+
+        return json.dumps(total, default=set_default, sort_keys=True)
+        # create the nonterminal dictonary
+
+    def n_possible_derivations(self):
+        """Return the number of possible terminal derivations that may yielded by this grammar."""
+        return sum(symbol.n_terminal_expansions() for symbol in self.nonterminals.values() if symbol.deep)
+
+
+def from_json(json_in):
+    gram_res = PCFG()
+    dict_rep = json.loads(json_in)
+    nonterminals = dict_rep.get('nonterminals')
+    for tag, nonterminal in nonterminals.iteritems():
+        rules = nonterminal['rules']
+        markup = nonterminal['markup']
+
+        # translate UI markup rep into data markup rep
+        tmp_markups = []
+        for markup_set, tags in markup.iteritems():
+            tmp_set = MarkupSet(markup_set)
+            for i in tags:
+                new_mark = Markup(i, tmp_set)
+                tmp_markups.append(new_mark)
+
+        temp_nonterm = NonterminalSymbol(tag, markup=set(tmp_markups), deep=nonterminal['deep'])
+        gram_res.add_nonterminal(temp_nonterm)
+
+        for ruleindex, rule in enumerate(rules):
+            # rule is an object
+            expansion = parse_rule(''.join(rule['expansion']))
+            application_rate = rule['app_rate']
+            markup = rule['markup']
+            tmp_markups = []
+            for markup_set, tags in markup.iteritems():
+                tmp_set = MarkupSet(markup_set)
+                for i in tags:
+                    new_mark = Markup(i, tmp_set)
+                    tmp_markups.append(new_mark)
+
+            gram_res.add_rule(temp_nonterm, expansion, application_rate)
+            for markups in tmp_markups:
+                gram_res.add_rule_markup(temp_nonterm, ruleindex, markups)
+    for markupSet in dict_rep.get('markups'):
+        gram_res.add_new_markup_set(MarkupSet(markupSet))
+
+    return gram_res

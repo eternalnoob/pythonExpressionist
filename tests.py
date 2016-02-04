@@ -1,12 +1,19 @@
 """import unittest for running tests"""
 import unittest
-from grammar import NonterminalSymbol, Rule, parse_rule, PCFG, SystemVar, Markup, MarkupSet, IntermediateDeriv, TerminalSymbol
-from IPython import embed
+
+from IntermediateDeriv import IntermediateDeriv
+from Markups import Markup, MarkupSet
+from NonterminalSymbol import NonterminalSymbol
+from PCFG import parse_rule, PCFG
+from Rule import Rule
+from Terminals import TerminalSymbol, SystemVar
+
 
 class TestNonterminalEquivalency(unittest.TestCase):
     """
     Testing Equivalency of NonterminalSymbols
     """
+
     def setUp(self):
         self.a_nonterminal = NonterminalSymbol('A')
         self.b_nonterminal = NonterminalSymbol('A')
@@ -34,22 +41,24 @@ class TestNonterminalEquivalency(unittest.TestCase):
         not equal eachother
         """
 
-        MRK_SET1=MarkupSet('A_MARKUP')
-        MRK_SET2=MarkupSet('B_MARKUP')
-        MRK_1=Markup('AAA', MRK_SET1)
-        MRK_2=Markup('BBB', MRK_SET2)
+        MRK_SET1 = MarkupSet('A_MARKUP')
+        MRK_SET2 = MarkupSet('B_MARKUP')
+        MRK_1 = Markup('AAA', MRK_SET1)
+        MRK_2 = Markup('BBB', MRK_SET2)
 
         self.a_nonterminal.add_markup(MRK_1)
         self.b_nonterminal.add_markup(MRK_2)
 
-        self.assertIn(MRK_1,self.a_nonterminal.markup)
+        self.assertIn(MRK_1, self.a_nonterminal.markup)
         self.assertIn(MRK_1, self.a_nonterminal.markup)
         self.assertNotEqual(self.a_nonterminal, self.b_nonterminal)
+
 
 class TestRuleEquivalency(unittest.TestCase):
     """
     Test equivalency of Rules
     """
+
     def setUp(self):
         self.a_derivation = parse_rule("[[Test]] of [rule] {parsing}")
         self.a_nonterminal = NonterminalSymbol('A')
@@ -83,6 +92,7 @@ class TestRuleEquivalency(unittest.TestCase):
         c_rule = Rule(c_nonterminal, self.a_derivation)
         self.assertNotEqual(c_rule, self.a_rule)
 
+
 class TestRuleOperations(unittest.TestCase):
 
     def test_add_markup_to_rule(self):
@@ -99,24 +109,12 @@ class TestRuleOperations(unittest.TestCase):
         should_derive = IntermediateDeriv(temp_markup, "rude boy what you saying so rude")
         self.assertEqual(should_derive, greet.expand())
 
-    def test_add_markup_to_rule(self):
-        greet = NonterminalSymbol('greet')
-        greet_rule = Rule(greet, parse_rule("rude boy what you saying so rude"))
-        tone = MarkupSet("tone")
-        rude = Markup("rude", tone)
-        tone.add_markup(rude)
-        greet_rule.add_markup(rude)
-        greet.add_rule_object(greet_rule)
-        self.assertEqual(list(greet_rule.markup)[0], rude)
-        temp_markup = set()
-        temp_markup.add(rude)
-        should_derive = IntermediateDeriv(temp_markup, "rude boy what you saying so rude")
-        self.assertEqual(should_derive, greet.expand())
 
 class TestPcfgOperations(unittest.TestCase):
     """
     Testing operations on a PCFG
     """
+
     def setUp(self):
         self.test_gram = PCFG()
         self.nonterminal = NonterminalSymbol('a')
@@ -193,7 +191,6 @@ class TestPcfgOperations(unittest.TestCase):
         self.nonterminal.add_markup(self.markup)
         self.test_gram.add_nonterminal(self.nonterminal)
 
-
     def test_empty_expansion(self):
         """
         test that expansions of nonterminals with no productions works correctly
@@ -202,9 +199,8 @@ class TestPcfgOperations(unittest.TestCase):
         a_prod = parse_rule("[[b]], this is a test of expansion")
         self.test_gram.add_rule(self.nonterminal, a_prod)
         self.test_gram.add_nonterminal(a_prod[0])
-        test_string = IntermediateDeriv(set(),"[[b]], this is a test of expansion")
+        test_string = IntermediateDeriv(set(), "[[b]], this is a test of expansion")
         self.assertEqual(self.test_gram.expand(NonterminalSymbol('a')), test_string)
-
 
     def test_modify_app_rate(self):
         """
@@ -240,4 +236,3 @@ class TestPcfgOperations(unittest.TestCase):
 
 if __name__ == '__main__':
     unittest.main()
-
