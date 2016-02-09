@@ -5,7 +5,7 @@ import operator
 class Rule(object):
     """A production rule in a grammar."""
 
-    def __init__(self, symbol, derivation, application_rate=1, markup=None):
+    def __init__(self, symbol, derivation, application_rate=1):
         """Initialize a Rule object.
         :param symbol: Nonterminal symbol(lhs) for this rule
         :type symbol: NonterminalSymbol.NonterminalSymbol
@@ -13,13 +13,10 @@ class Rule(object):
         :type derivation: list()
         :param application_rate: application_rate(probability) for this rule
         """
-        if markup is None:
-            markup = set()
         self.symbol = symbol  # NonterminalSymbol that is lhs of rule
         self.derivation = derivation  # An ordered list of nonterminal and terminal symbols
         self.application_rate = application_rate
         # specific rules can have markup to represent variation within nonterminal that does not warrant a new nonterminal
-        self.markup = markup
         # This attribute holds a list containing all possible derivations of this rule (each being represented by
         # an agglomerated IntermediateDerivation object); it's built once and only once the first time
         # self.exhaustively_and_nonprobabilistically_derive() is called
@@ -48,7 +45,7 @@ class Rule(object):
         """Carry out the derivation specified for this rule."""
         if markup is None:
             markup = set()
-        return (sum(symbol.expand(markup=markup) for symbol in self.derivation)) + self.markup
+        return (sum(symbol.expand(markup=markup) for symbol in self.derivation))
 
     def derivation_json(self):
         def stringify(x): return x.__str__()
@@ -81,7 +78,7 @@ class Rule(object):
 
         final = []
         for values in ret_list:
-            final.append(sum(values) + self.markup)
+            final.append(sum(values))
 
         # at this point, ret list should be a list of the Intermediate derivations
         # ret_list = list(itertools.chain.from_iterable(ret_list))
@@ -119,17 +116,6 @@ class Rule(object):
                 ]
             self.all_possible_derivations = new_combined_intermediate_derivations
         return self.all_possible_derivations
-
-    def add_markup(self, markup):
-        if markup not in self.markup:
-            self.markup.add(markup)
-
-    def remove_markup(self, markup):
-        # this is pretty gross, but it's working, I suppose
-        if markup in list(self.markup):
-            a = list(self.markup)
-            a.remove(markup)
-            self.markup = set(a)
 
     def n_terminal_expansions(self):
         """Return the number of possible terminal expansions of this rule."""

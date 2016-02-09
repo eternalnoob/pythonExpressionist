@@ -135,31 +135,6 @@ class PCFG(object):
             self.markup_class[str(markup.tagset)].add(markup)
             self.nonterminals.get(str(nonterminal.tag)).add_markup(markup)
 
-    def add_rule_markup(self, nonterminal, rule, markup):
-        """
-        add a markup to a specific rule in a nonterminal
-        will add it to the PCFG's markup_class as well
-        nonterminal is the nonterminal we are going to change,
-        rule holds the index of the rule we are changing
-        markup holds the markup we are adding
-        """
-        self.add_unused_markup(markup)
-        self.nonterminals.get(str(nonterminal.tag)).rules[rule].add_markup(markup)
-
-    def remove_rule_markup(self, nonterminal, rule, markup):
-        """
-        remove occurence of markup from a given rule
-        """
-        self.nonterminals.get(str(nonterminal.tag)).rules[rule].remove_markup(markup)
-
-    def toggle_rule_markup(self, nonterminal, rule, markup):
-        if markup in list(self.nonterminals.get(str(nonterminal.tag)).rules[rule].markup):
-            print("removing rule markup")
-            self.remove_rule_markup(nonterminal, rule, markup)
-        else:
-            print("adding rule markup")
-            self.add_rule_markup(nonterminal, rule, markup)
-
     def remove_markup(self, nonterminal, markup):
         """
         add markup to an existing nonterminal
@@ -346,17 +321,8 @@ def from_json(json_in):
             # rule is an object
             expansion = parse_rule(''.join(rule['expansion']))
             application_rate = rule['app_rate']
-            markup = rule['markup']
-            tmp_markups = []
-            for markup_set, tags in markup.iteritems():
-                tmp_set = MarkupSet(markup_set)
-                for i in tags:
-                    new_mark = Markup(i, tmp_set)
-                    tmp_markups.append(new_mark)
-
             gram_res.add_rule(temp_nonterm, expansion, application_rate)
-            for markups in tmp_markups:
-                gram_res.add_rule_markup(temp_nonterm, ruleindex, markups)
+
     for markupSet in dict_rep.get('markups'):
         gram_res.add_new_markup_set(MarkupSet(markupSet))
 

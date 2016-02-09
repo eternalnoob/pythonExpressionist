@@ -112,7 +112,6 @@ var Interface = React.createClass({
         if (this.state.current_nonterminal != "") {
             var object = {
                 "nonterminal": this.state.current_nonterminal,
-                "rule": this.state.current_rule,
                 "markupSet": set,
                 "tag": tag
             }
@@ -352,9 +351,6 @@ var Interface = React.createClass({
         var board
         if (this.state.current_nonterminal != "") {
             present_markups = this.state.nonterminals[this.state.current_nonterminal].markup
-            if (this.state.current_rule != -1) {
-                present_markups = this.state.nonterminals[this.state.current_nonterminal].rules[this.state.current_rule].markup
-            }
             def_rules = this.state.nonterminals[this.state.current_nonterminal].rules
             //check which board we need to render
             board = <NonterminalBoard expand={this.handleExpand} setDeep={this.handleSetDeep}

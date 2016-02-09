@@ -11,7 +11,7 @@ import re
 import PCFG
 
 app = Flask(__name__)
-debug = False
+debug = True
 
 
 @app.route('/', methods=['GET', 'POST'])
@@ -154,13 +154,8 @@ def toggle_tag():
     nonterminal = NonterminalSymbol.NonterminalSymbol(data["nonterminal"])
     markupSet = Markups.MarkupSet(data['markupSet'])
     markup = Markups.Markup(data['tag'], markupSet)
-    rule = int(data['rule'])
-    if rule != -1:
-        print("rule")
-        flask_grammar.toggle_rule_markup(nonterminal, rule, markup)
-    else:
-        print("nonterminal")
-        flask_grammar.toggle_markup(nonterminal, markup)
+    print("nonterminal")
+    flask_grammar.toggle_markup(nonterminal, markup)
 
     return flask_grammar.to_json()
 
