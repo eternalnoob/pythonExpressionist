@@ -339,6 +339,22 @@ class PCFG(object):
         new = from_json(test_str)
         self.__dict__ = new.__dict__
 
+    def delete_nonterminal(self, nonterminal):
+
+        def filterrule(rule):
+            if "[[{0}]]".format(nonterminal) in rule['expansion']:
+                return 0
+            else:
+                return 1
+
+        JSON = jsontree.loads(self.to_json())
+        JSON['nonterminals'].pop(nonterminal)   # delete nonterminal
+        for val in JSON['nonterminals'].values():
+            val['rules'] = filter(filterrule, val['rules'])
+
+        test_str = jsontree.dumps(JSON)
+        new = from_json(test_str)
+        self.__dict__ = new.__dict__
 
 
 def from_json(json_in):
