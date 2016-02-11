@@ -306,6 +306,38 @@ class PCFG(object):
         new  = from_json(test_str)
         self.__dict__ = new.__dict__
 
+    def modify_markup(self, markupset, old_tag, new_tag):
+        JSON = jsontree.loads(self.to_json())
+
+        index = JSON['markups'][markupset].index(old_tag)
+        JSON['markups'][markupset][index] = new_tag
+
+        for val in JSON['nonterminals'].values():
+            if val['markup'].has_key(markupset):
+                try:
+                    index = val['markup'][markupset].index(old_tag)
+                    if index != -1:
+                        val['markup'][markupset][index] = new_tag
+                except ValueError:
+                    x=1
+
+        test_str = jsontree.dumps(JSON)
+        new = from_json(test_str)
+        self.__dict__ = new.__dict__
+
+    #doing all this stuff on the JSON isn't too bad
+    def modify_markupset(self, oldset, newset):
+        JSON = jsontree.loads(self.to_json())
+
+        JSON['markups'][newset] = JSON['markups'].pop(oldset)
+
+        for val in JSON['nonterminals'].values():
+            if val['markup'].has_key(oldset):
+                val['markup'][newset] = val['markup'].pop(oldset)
+
+        test_str = jsontree.dumps(JSON)
+        new = from_json(test_str)
+        self.__dict__ = new.__dict__
 
 
 
