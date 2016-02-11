@@ -12,6 +12,8 @@ from NonterminalSymbol import NonterminalSymbol
 from Markups import Markup, MarkupSet
 from Terminals import TerminalSymbol, SystemVar
 
+import jsontree
+
 N_RULES_FIRED = 0
 
 
@@ -239,15 +241,10 @@ class PCFG(object):
             temp['complete'] = value.complete
             rules_list = []
             for rules in value.rules:
-                rule_mu_dict = collections.defaultdict(set)
 
                 # createJSON representation for individual rule markup
-                for markup in rules.markup:
-                    rule_mu_dict[markup.tagset.__str__()] |= {markup.tag}
-                    markups[markup.tagset.__str__()] |= {markup.tag}
 
-                rules_list.append({'expansion': rules.derivation_json(), 'app_rate': rules.application_rate,
-                                   'markup': rule_mu_dict})
+                rules_list.append({'expansion': rules.derivation_json(), 'app_rate': rules.application_rate,})
             temp['rules'] = rules_list
 
             markup_dict = collections.defaultdict(set)
@@ -296,6 +293,20 @@ class PCFG(object):
     def n_possible_derivations(self):
         """Return the number of possible terminal derivations that may yielded by this grammar."""
         return sum(symbol.n_terminal_expansions() for symbol in self.nonterminals.values() if symbol.deep)
+
+    # really need to get a better way to do this
+    def modify_tag(self, old_tag, new_tag):
+        JSON = jsontree.loads(self.to_json())
+        print(JSON)
+        JSON['nonterminals'][new_tag] = JSON['nonterminals'].pop(old_tag)
+        print(JSON)
+        test_str = jsontree.dumps(JSON)
+        test_str = test_str.replace("[[{0}]]".format(old_tag), "[[{0}]]".format(new_tag))
+        print test_str
+        new  = from_json(test_str)
+        self.__dict__ = new.__dict__
+
+
 
 
 def from_json(json_in):
