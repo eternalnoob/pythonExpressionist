@@ -11,6 +11,7 @@ import re
 from NonterminalSymbol import NonterminalSymbol
 from Markups import Markup, MarkupSet
 from Terminals import TerminalSymbol, SystemVar
+import copy
 
 import jsontree
 
@@ -356,6 +357,10 @@ class PCFG(object):
         new = from_json(test_str)
         self.__dict__ = new.__dict__
 
+    def copy_rule(self, original, index, new):
+        rule = copy.copy(self.nonterminals[original].rules[index])
+        rule.symbol = self.nonterminals[new]
+        self.nonterminals[new].add_rule_object(rule)
 
 def from_json(json_in):
     gram_res = PCFG()
