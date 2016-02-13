@@ -51,8 +51,9 @@ def load_file_grammar():
 
 @app.route('/grammar/save', methods=['GET', 'POST'])
 def save_grammar():
-    filename = ''.join(['grammars/save/', request.data])
-    outfile = open(filename, 'w')
+    grammar_name = request.data
+    filename = os.path.abspath(os.path.join(os.path.dirname(__file__), ''.join(['grammars/load/', grammar_name])))
+    outfile = open(filename, 'w+')
     outfile.write(flask_grammar.to_json())
     return "saving new grammar"
 
@@ -82,6 +83,21 @@ def add_nt():
     return flask_grammar.to_json()
 
 
+@app.route('/nonterminal/rename', methods=['POST'])
+def rename_nt():
+    data = request.get_json()
+    old = re.search('[^\[\]]+', data['old']).group(0)
+    new = re.search('[^\[\]]+', data['new']).group(0)
+    flask_grammar.modify_tag(old, new) 
+    return flask_grammar.to_json()
+
+@app.route('/nonterminal/delete', methods=['POST'])
+def delete_nt():
+    data = request.get_json()
+    nonterminal = re.search('[^\[\]]+', data['nonterminal']).group(0)
+    flask_grammar.delete_nonterminal(nonterminal)
+    return flask_grammar.to_json()
+
 @app.route('/nonterminal/deep', methods=['POST'])
 def set_deep():
     data = request.get_json()
@@ -100,6 +116,15 @@ def expand_nt():
     data = request.get_json()
     return flask_grammar.expand(NonterminalSymbol.NonterminalSymbol(data['nonterminal'])).to_json()
 
+
+@app.route('/rule/swap', methods=['POST'])
+def swap_rule():
+    data = request.get_json()
+    index = int(data['index'])
+    original = re.search('[^\[\]]+', data['original']).group(0)
+    new = re.search('[^\[\]]+', data['new']).group(0)
+    flask_grammar.copy_rule(original, index, new)
+    return flask_grammar.to_json()
 
 @app.route('/rule/add', methods=['POST'])
 def add_rule():
@@ -158,6 +183,24 @@ def toggle_tag():
     flask_grammar.toggle_markup(nonterminal, markup)
 
     return flask_grammar.to_json()
+
+@app.route('/markup/renameset', methods=['POST'])
+def rename_markupset():
+    data = request.get_json()
+    oldset = data['oldset']
+    newset = data['newset']
+    flask_grammar.modify_markupset(oldset, newset)
+    return flask_grammar.to_json()
+
+@app.route('/markup/renametag', methods=['POST'])
+def rename_markuptag():
+    data = request.get_json()
+    markupset = data['markupset']
+    oldtag = data['oldtag']
+    newtag = data['newtag']
+    flask_grammar.modify_markup(markupset, oldtag, newtag)
+    return flask_grammar.to_json()
+
 
 
 if __name__ == '__main__':

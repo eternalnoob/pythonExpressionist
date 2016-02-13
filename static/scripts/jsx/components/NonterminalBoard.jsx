@@ -33,7 +33,11 @@ var NonterminalBoard = React.createClass({
                 expand = <h1><Button bsStyle={this.props.nonterminal.deep ? "success" : "danger" }
                                      onClick={this.props.setDeep} title={deep_str}>{glyph_nt}</Button>
                     {name}<Button onClick={this.props.expand} title="Expand This"><Glyphicon
-                        glyph="resize-full"/></Button></h1>
+                        glyph="resize-full"/></Button>
+                    <Button onClick={this.props.rename} title="Rename Nonterminal">
+                        Rename</Button>
+                    <Button onClick={this.props.delete_nt}
+                      title="Delete"> Delete</Button></h1>
 
             }
 

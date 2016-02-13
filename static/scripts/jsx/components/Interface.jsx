@@ -178,6 +178,47 @@ var Interface = React.createClass({
         }
     },
 
+    handleNonterminalRename: function (nonterminal) {
+            var newsymbol = window.prompt("Please enter new Symbol Name")
+        if (this.state.current_nonterminal != "" && newsymbol != "") {
+            var object = {
+                "old": this.state.current_nonterminal,
+                "new": newsymbol
+            }
+            ajax({
+                url: '/nonterminal/rename',
+                type: "POST",
+                contentType: "application/json",
+                data: JSON.stringify(object),
+                async: false,
+                cache: false
+            })
+            this.updateFromServer()
+        }
+    },
+    handleNonterminalDelete: function () {
+        
+            var confirmresponse = window.prompt("This will delete The nonterminal and\
+ all rules which reference it, Be warned! If you wish to continue, please type\
+YES, in all caps")
+        if (this.state.current_nonterminal != "" && confirmresponse == "YES") {
+            var object = {
+                "nonterminal": this.state.current_nonterminal 
+            }
+            ajax({
+                url: '/nonterminal/delete',
+                type: "POST",
+                contentType: "application/json",
+                data: JSON.stringify(object),
+                async: false,
+                cache: false
+            })
+            this.setState({current_nonterminal: ""})
+            this.updateFromServer()
+        }
+    },
+
+
     handleMarkupSetAdd: function () {
         console.log("You are adding a MarkupSet!")
         var markupTag = window.prompt("Please enter MarkupSet")
@@ -219,7 +260,51 @@ var Interface = React.createClass({
             }
         }
     },
+    handleMarkupRename: function (set) {
+        var oldTag = window.prompt("Please Enter the name of the original Markup")
+        var markupTag = window.prompt("Please enter New Markup Tag")
+        if ( markupTag != "" && oldTag != "" )
+        {
+            var object = {
+                "markupset": set,
+                "oldtag": oldTag,
+                "newtag": markupTag
+            }
+            console.log(object)
+            ajax({
+                url: '/markup/renametag',
+                type: "POST",
+                contentType: "application/json",
+                data: JSON.stringify(object),
+                async: false,
+                cache: false
+            })
+            this.updateFromServer()
+        }
+    },
 
+    handleMarkupSetRename: function (set) {
+        var newset = window.prompt("Please enter New Markup Set Name")
+        console.log(newset)
+        if (newset != "") {
+            //ensure tag does not exist in tagset
+                var object = {
+                    "oldset": set,
+                    "newset": newset 
+                            }
+                console.log(object)
+                ajax({
+                    url: '/markup/renameset',
+                    type: "POST",
+                    contentType: "application/json",
+                    data: JSON.stringify(object),
+                    async: false,
+                    cache: false
+                })
+                this.updateFromServer()
+            }
+        
+    },
     handleRuleClick: function (expansion) {
         console.log(expansion)
         var rules = this.state.nonterminals[this.state.current_nonterminal].rules
@@ -232,6 +317,7 @@ var Interface = React.createClass({
             }
         }
     },
+
     handleRuleAdd: function () {
         //AJAX GOES HERE
         console.log("add a new Rule")
@@ -345,6 +431,7 @@ var Interface = React.createClass({
         }
     },
 
+
     render: function () {
         var present_markups = []
         var def_rules = []
@@ -353,7 +440,9 @@ var Interface = React.createClass({
             present_markups = this.state.nonterminals[this.state.current_nonterminal].markup
             def_rules = this.state.nonterminals[this.state.current_nonterminal].rules
             //check which board we need to render
-            board = <NonterminalBoard expand={this.handleExpand} setDeep={this.handleSetDeep}
+            board = <NonterminalBoard rename ={this.handleNonterminalRename}
+              expand={this.handleExpand} setDeep={this.handleSetDeep}
+              delete_nt ={this.handleNonterminalDelete}
                                       name={this.state.current_nonterminal}
                                       nonterminal={this.state.nonterminals[this.state.current_nonterminal]}/>
             if (this.state.current_rule != -1) {
@@ -376,7 +465,10 @@ var Interface = React.createClass({
                         <div className="show-y-wrapper">
                             <MarkupBar className="markup-bar" onClickMarkup={this.handleMarkupClick}
                                        onAddMarkup={this.handleMarkupAdd}
-                                       onAddMarkupSet={this.handleMarkupSetAdd} present={present_markups}
+                                       onAddMarkupSet={this.handleMarkupSetAdd}
+                                       present={present_markups}
+                                       onRenameMarkup= {this.handleMarkupRename}
+                                       onRenameMarkupSet={this.handleMarkupSetRename}
                                        total={this.state.markups}/>
                         </div>
                     </div>

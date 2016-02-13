@@ -2,6 +2,7 @@ var React = require('react')
 var DropdownButton = require('react-bootstrap').DropdownButton
 var MenuItem = require('react-bootstrap').MenuItem
 var Glyphicon = require('react-bootstrap').Glyphicon
+var Button = require('react-bootstrap').Button
 
 var MarkupSet = React.createClass({
 
@@ -13,7 +14,7 @@ var MarkupSet = React.createClass({
         onAddMarkup: React.PropTypes.func
     },
     render: function () {
-
+//<Button onclick={this.props.onRenameMarkup}>REN</Button>
         var tagset_rep = this.props.name
         var out_arr = []
         var total_length = this.props.current_set.length
@@ -48,6 +49,12 @@ var MarkupSet = React.createClass({
                                onClick={this.props.onAddMarkup.bind(null, tagset_rep)}><Glyphicon
             glyph="plus"/></MenuItem>);
 
+        console.log(this.props)
+        out_arr.push(<MenuItem bsStyle='primary' key={total_length+1} eventkey={total_length+1}
+          onClick={this.props.onRenameMarkupSet.bind(null, tagset_rep)}>Rename MarkupSet</MenuItem>);
+
+        out_arr.push(<MenuItem bsStyle='primary' key={total_length+2} eventkey={total_length+2}
+          onClick={this.props.onRenameMarkup.bind(null, tagset_rep)}>Rename Tags</MenuItem>);
 
         return (
             <DropdownButton className="grp-button" id={this.props.name} title={this.props.name}

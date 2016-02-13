@@ -362,6 +362,11 @@ class PCFG(object):
         rule.symbol = self.nonterminals[new]
         self.nonterminals[new].add_rule_object(rule)
 
+    # want to make this insert changed rule at old index, to preserve order
+    def modify_rule(self, nonterminal, index):
+        x=1
+
+
 def from_json(json_in):
     gram_res = PCFG()
     dict_rep = json.loads(json_in)

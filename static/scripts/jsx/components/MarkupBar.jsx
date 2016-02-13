@@ -24,7 +24,14 @@ var MarkupBar = React.createClass({
         present_nt = []
       }
 
-      output.push(<MarkupSet onClickMarkup = {this.props.onClickMarkup}  onAddMarkup = {this.props.onAddMarkup} key={total[outer]} name={total[outer]} present_nt={present_nt} current_set={this.props.total[total[outer]]}/>)
+      output.push(<MarkupSet onClickMarkup = {this.props.onClickMarkup}
+        onRenameMarkupSet={this.props.onRenameMarkupSet} 
+        onAddMarkup ={this.props.onAddMarkup}
+        key={total[outer]} 
+        name={total[outer]}
+        present_nt={present_nt} 
+        onRenameMarkup={this.props.onRenameMarkup}
+        current_set={this.props.total[total[outer]]}/>)
     }
     return(
         <ButtonGroup className="btn-test">
