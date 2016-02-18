@@ -17,28 +17,28 @@ var RuleBoard = React.createClass({
 
     render: function () {
 
-        console.log(this.props.expansion);
+        //console.log(this.props.expansion);
         var expansion_arr = [];
         var length = this.props.expansion.length;
         var symbol;
         for(var i = 0; i < length; i++)
         {
-            console.log(this.props.expansion[i])
+            //console.log(this.props.expansion[i])
             symbol = this.props.expansion[i]
             if (symbol.indexOf('[[') != -1) {
                 var tag = symbol.slice(2,-2);
-                console.log(tag)
-                expansion_arr.push(<span style={{"float": "left"}} onClick={this.props.onRuleClickThrough.bind(null, symbol.slice(2,-2))}>
+                //console.log(tag)
+                expansion_arr.push(<span onClick={this.props.onRuleClickThrough.bind(null, symbol.slice(2,-2))}>
                 <b>{symbol}</b></span>)
             }
             else
             {
-                expansion_arr.push(<span style={{"float": "left"}} >{symbol}</span>)
+                expansion_arr.push(<span>{symbol}</span>)
             }
 
 
         }
-        console.log(expansion_arr)
+        //console.log(expansion_arr)
 
         return (
             <div>
