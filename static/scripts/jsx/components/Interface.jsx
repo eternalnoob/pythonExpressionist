@@ -78,6 +78,12 @@ var Interface = React.createClass({
         }
     },
 
+    handleRuleClickThrough: function(tag) {
+        console.log(tag)
+        this.setState({current_nonterminal: tag})
+        this.setState({current_rule: -1})
+    },
+
     //this handles the addition of a nonterminal
     handleNonterminalAdd: function () {
 
@@ -448,7 +454,8 @@ YES, in all caps")
             if (this.state.current_rule != -1) {
                 board = <RuleBoard expand={this.handleExpand} name={this.state.current_nonterminal}
                                    onAppChange={this.handleAppModify}
-                                   expansion={def_rules[this.state.current_rule].expansion.join('')}
+                                   onRuleClickThrough={this.handleRuleClickThrough}
+                                   expansion={def_rules[this.state.current_rule].expansion}
                                    app_rate={def_rules[this.state.current_rule].app_rate}
                                    onDeleteRule={this.onRuleDelete} onChangeRule={this.onRuleChange}/>
             }
