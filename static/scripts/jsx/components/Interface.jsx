@@ -109,6 +109,7 @@ var Interface = React.createClass({
                 })
                 this.updateFromServer()
                 this.setState({current_nonterminal: nonterminal}) 
+                this.setState({current_rule: -1})
             }
         }
     },
