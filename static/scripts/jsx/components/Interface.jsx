@@ -108,6 +108,7 @@ var Interface = React.createClass({
                     cache: false
                 })
                 this.updateFromServer()
+                this.setState({current_nonterminal: nonterminal}) 
             }
         }
     },
@@ -219,6 +220,7 @@ var Interface = React.createClass({
                 cache: false
             })
             this.updateFromServer()
+            this.setState({current_nonterminal: newsymbol}) 
         }
     },
     handleNonterminalDelete: function () {
@@ -365,6 +367,9 @@ YES, in all caps")
             })
             console.log("adding a rule")
             this.updateFromServer()
+            var lastindex=this.state.nonterminals[this.state.current_nonterminal].rules.length
+            console.log(lastindex)
+            this.setState({current_rule: lastindex})
         }
     },
 
