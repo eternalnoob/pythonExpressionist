@@ -367,6 +367,10 @@ class PCFG(object):
         x=1
 
 
+    def expand_rule(self, nonterminal, index):
+        return self.nonterminals[nonterminal].expand_rule(index)
+
+
 def from_json(json_in):
     gram_res = PCFG()
     dict_rep = json.loads(json_in)

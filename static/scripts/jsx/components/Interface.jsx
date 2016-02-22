@@ -166,6 +166,25 @@ var Interface = React.createClass({
         });
     },
 
+    handleExpandRule: function () {
+        ajax({
+            url: '/rule/expand',
+            type: 'POST',
+            contentType: "application/json",
+            data: JSON.stringify({"nonterminal": this.state.current_nonterminal,"index": this.state.current_rule}),
+            dataType: 'json',
+            async: true,
+            cache: false,
+            success: function (data) {
+                this.setState({expansion_feedback: data.derivation})
+                this.setState({markup_feedback: data.markup})
+            }.bind(this),
+            error: function (xhr, status, err) {
+                console.error(this.props.url, status, err.toString());
+            }.bind(this)
+        });
+    },
+
     handleSetDeep: function (nonterminal) {
         if (this.state.current_nonterminal != "") {
             var object = {
@@ -387,10 +406,6 @@ YES, in all caps")
         }
     },
 
-    importReps: function () {
-
-    },
-
     loadGrammar: function () {
         var filename = window.prompt("Enter the Name of the Grammar you wish to load")
         if (filename != "") {
@@ -452,10 +467,11 @@ YES, in all caps")
                                       name={this.state.current_nonterminal}
                                       nonterminal={this.state.nonterminals[this.state.current_nonterminal]}/>
             if (this.state.current_rule != -1) {
-                board = <RuleBoard expand={this.handleExpand} name={this.state.current_nonterminal}
+                board = <RuleBoard name={this.state.current_nonterminal}
                                    onAppChange={this.handleAppModify}
                                    onRuleClickThrough={this.handleRuleClickThrough}
                                    expansion={def_rules[this.state.current_rule].expansion}
+                                   onRuleExpand={this.handleExpandRule}
                                    app_rate={def_rules[this.state.current_rule].app_rate}
                                    onDeleteRule={this.onRuleDelete} onChangeRule={this.onRuleChange}/>
             }

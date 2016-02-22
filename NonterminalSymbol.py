@@ -72,6 +72,13 @@ class NonterminalSymbol(object):
         selected_rule = self._pick_a_production_rule()
         return selected_rule.derive(new_markup)
 
+    def expand_rule(self, index):
+        if self.rules[index]:
+            print(self.rules[index])
+            print("wow")
+            print(self.markup)
+            return self.rules[index].derive(self.markup)
+
     def set_deep(self, truthy):
         self.deep = truthy
 

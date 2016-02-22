@@ -117,6 +117,11 @@ def expand_nt():
     return flask_grammar.expand(NonterminalSymbol.NonterminalSymbol(data['nonterminal'])).to_json()
 
 
+@app.route('/rule/expand', methods=['POST', 'GET'])
+def expand_rule():
+    data = request.get_json()
+    return flask_grammar.expand_rule(data['nonterminal'], int(data['index']) ).to_json()
+
 @app.route('/rule/swap', methods=['POST'])
 def swap_rule():
     data = request.get_json()

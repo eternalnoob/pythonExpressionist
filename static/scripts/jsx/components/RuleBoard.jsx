@@ -54,6 +54,9 @@ var RuleBoard = React.createClass({
 
                 <h2>{this.props.app_rate}<Button bsStyle="default" title="Modify Application Rate"
                                                  onClick={this.props.onAppChange}><Glyphicon glyph="console"/></Button>
+                
+                <Button bsStyle="default" title="Expand this rule"
+                                                 onClick={this.props.onRuleExpand}><Glyphicon glyph="resize-full"/></Button>
                 </h2>
 
             </div>
