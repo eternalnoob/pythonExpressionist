@@ -147,6 +147,8 @@ var Interface = React.createClass({
         this.state.current_nonterminal = ""
         this.state.current_rule = -1
         this.updateFromServer()
+        this.setState({markup_feedback: []})
+        this.setState({expansion_feedback: ""})
     },
 
     handleExpand: function () {

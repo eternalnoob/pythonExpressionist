@@ -45,8 +45,8 @@ def load_file_grammar():
     user_file = os.path.abspath(os.path.join(os.path.dirname(__file__), ''.join(['grammars/load/', grammar_name])))
     grammar_file = open(user_file, 'r')
     if grammar_file:
-        flask_grammar = PCFG.from_json(grammar_file.read())
-    return PCFG.from_json(grammar_file.read())
+        flask_grammar = PCFG.from_json(str(grammar_file.read()))
+    return flask_grammar.to_json()
 
 
 @app.route('/grammar/save', methods=['GET', 'POST'])

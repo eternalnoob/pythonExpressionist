@@ -16,7 +16,7 @@ var FeedbackBar = React.createClass({
         var markups_str = ""
         if (this.props.markup) {
             this.props.markup.forEach(function (tags) {
-                markups_str += tags + " "
+                markups_str += tags + '\n'
             })
         }
         return (

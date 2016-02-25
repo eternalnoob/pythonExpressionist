@@ -62,11 +62,15 @@ var NonterminalList = React.createClass({
 
         return (
 
-            <ListGroup>
-                {total}
-                <ListGroupItem bsSize="xsmall" key="ADDNEW" onClick={this.props.onAddNonterminal}><Glyphicon
-                    glyph="plus"/></ListGroupItem>
-            </ListGroup>
+            <div>
+
+                <ListGroup>
+                    {total}
+                    <ListGroupItem bsSize="xsmall" key="ADDNEW" onClick={this.props.onAddNonterminal}><Glyphicon
+                        glyph="plus"/></ListGroupItem>
+
+                </ListGroup>
+            </div>
         );
     }
 });
