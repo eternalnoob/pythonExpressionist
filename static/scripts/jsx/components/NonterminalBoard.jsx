@@ -16,8 +16,8 @@ var NonterminalBoard = React.createClass({
     handleClickerThing: function(object){
         var idx = object.index
         var symbol = object.symbol
-        console.log(idx)
-        console.log(symbol)
+        //console.log(idx)
+        //console.log(symbol)
         return <ListGroupItem
             onClick={this.props.onRuleClickThrough.bind(null, symbol, idx)}>{object['expansion']}</ListGroupItem>
     },
@@ -38,7 +38,7 @@ var NonterminalBoard = React.createClass({
                 deep_str = name + " is NOT a deep representation"
                 glyph_nt = <Glyphicon glyph="remove"/>
             }
-            console.log(this.props.referents)
+            //console.log(this.props.referents)
             if( this.props.referents != []) {
                 var referents = this.props.referents.map(this.handleClickerThing)
             }

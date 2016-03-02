@@ -239,7 +239,7 @@ class PCFG(object):
         else:
             to_file = True
 
-        print(self.markup_class)
+        #print(self.markup_class)
         for key, value in self.nonterminals.iteritems():
             temp = collections.defaultdict()
             if to_file is False:
@@ -262,7 +262,7 @@ class PCFG(object):
                                 nonterminals[symbol.tag] = collections.defaultdict()
                             if not nonterminals[symbol.tag].get('referents'):
                                 nonterminals[symbol.tag]['referents'] = []
-                            print(nonterminals[symbol.tag]['referents'])
+                            #print(nonterminals[symbol.tag]['referents'])
 
                             ref_tag = {"symbol": str(value.tag), "index": i}
                             if not ref_tag in nonterminals[symbol.tag]['referents']:
@@ -320,10 +320,10 @@ class PCFG(object):
             if isinstance(obj, NonterminalSymbol):
                 return str(obj)
             else:
-                print(type(obj))
+                #print(type(obj))
                 raise TypeError
 
-        print total
+        #print total
         return json.dumps(total, default=set_default, sort_keys=True)
         # create the nonterminal dictonary
 
@@ -334,12 +334,12 @@ class PCFG(object):
     # really need to get a better way to do this
     def modify_tag(self, old_tag, new_tag):
         JSON = jsontree.loads(self.to_json())
-        print(JSON)
+        #print(JSON)
         JSON['nonterminals'][new_tag] = JSON['nonterminals'].pop(old_tag)
-        print(JSON)
+        #print(JSON)
         test_str = jsontree.dumps(JSON)
         test_str = test_str.replace("[[{0}]]".format(old_tag), "[[{0}]]".format(new_tag))
-        print test_str
+        #print test_str
         new  = from_json(test_str)
         self.__dict__ = new.__dict__
 

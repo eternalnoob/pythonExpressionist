@@ -476,8 +476,8 @@ YES, in all caps")
         var symbol = object['symbol']
         var index = object['index']
 
-        console.log(symbol)
-        console.log(index)
+        //console.log(symbol)
+        //console.log(index)
         return {"symbol": symbol, "index": index, "expansion": this.state.nonterminals[symbol].rules[index].expansion.join("")}
     },
 
@@ -492,13 +492,13 @@ YES, in all caps")
             def_rules = this.state.nonterminals[this.state.current_nonterminal].rules
             //check which board we need to render
             if (this.state.current_rule == -1) {
-                console.log(current)
+                //console.log(current)
                 var referents = []
                 if ("referents" in current)
                 {
                     var referents = current["referents"]
                     referents = referents.map(this.getexpansion)
-                    console.log(referents)
+                    //console.log(referents)
                 }
 
                 board = <NonterminalBoard rename={this.handleNonterminalRename}
