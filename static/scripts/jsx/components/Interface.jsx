@@ -17,10 +17,9 @@ var Interface = React.createClass({
 
     //load data from server, use default grammar
     getInitialState: function () {
-        console.log("test")
         var a
         ajax({
-            url: '/default',
+            url: $SCRIPT_ROOT + '/default',
             dataType: 'json',
             async: false,
             cache: false,
@@ -49,7 +48,7 @@ var Interface = React.createClass({
     updateFromServer: function () {
         var a
         ajax({
-            url: '/default',
+            url: $SCRIPT_ROOT + '/default',
             dataType: 'json',
             async: false,
             cache: false,
@@ -66,6 +65,7 @@ var Interface = React.createClass({
         this.setState({nonterminals: b})
         this.setState({markups: c})
         this.setState({system_vars: d})
+        console.log($SCRIPT_ROOT)
 
     },
 
@@ -75,6 +75,8 @@ var Interface = React.createClass({
             console.log("you clicked nonterminal " + this.state.nonterminals[position])
             this.setState({current_nonterminal: position})
             this.setState({current_rule: -1})
+            this.setState({markup_feedback: []})
+            this.setState({expansion_feedback: ""})
         }
     },
 
@@ -82,8 +84,16 @@ var Interface = React.createClass({
         console.log(tag)
         this.setState({current_nonterminal: tag})
         this.setState({current_rule: -1})
+        this.setState({markup_feedback: []})
+        this.setState({expansion_feedback: ""})
     },
 
+    handleNonterminalRuleClickThrough: function(tag, index) {
+        this.setState({current_nonterminal: tag})
+        this.setState({current_rule: index})
+        this.setState({markup_feedback: []})
+        this.setState({expansion_feedback: ""})
+    },
     //this handles the addition of a nonterminal
     handleNonterminalAdd: function () {
 
@@ -110,6 +120,8 @@ var Interface = React.createClass({
                 this.updateFromServer()
                 this.setState({current_nonterminal: nonterminal}) 
                 this.setState({current_rule: -1})
+                this.setState({markup_feedback: []})
+                this.setState({expansion_feedback: ""})
             }
         }
     },
@@ -125,7 +137,7 @@ var Interface = React.createClass({
             }
             console.log(object)
             ajax({
-                url: '/markup/toggle',
+                url: $SCRIPT_ROOT + '/markup/toggle',
                 type: "POST",
                 contentType: "application/json",
                 data: JSON.stringify(object),
@@ -139,7 +151,7 @@ var Interface = React.createClass({
     resetGrammar: function () {
 
         ajax({
-            url: '/grammar/new',
+            url: $SCRIPT_ROOT + '/grammar/new',
             type: 'GET',
             async: false,
             cache: false
@@ -153,7 +165,7 @@ var Interface = React.createClass({
 
     handleExpand: function () {
         ajax({
-            url: '/nonterminal/expand',
+            url: $SCRIPT_ROOT + '/nonterminal/expand',
             type: 'POST',
             contentType: "application/json",
             data: JSON.stringify({"nonterminal": this.state.current_nonterminal}),
@@ -172,7 +184,7 @@ var Interface = React.createClass({
 
     handleExpandRule: function () {
         ajax({
-            url: '/rule/expand',
+            url: $SCRIPT_ROOT + '/rule/expand',
             type: 'POST',
             contentType: "application/json",
             data: JSON.stringify({"nonterminal": this.state.current_nonterminal,"index": this.state.current_rule}),
@@ -196,7 +208,7 @@ var Interface = React.createClass({
             }
             console.log(object)
             ajax({
-                url: '/nonterminal/deep',
+                url: $SCRIPT_ROOT + '/nonterminal/deep',
                 type: "POST",
                 contentType: "application/json",
                 data: JSON.stringify(object),
@@ -215,7 +227,7 @@ var Interface = React.createClass({
                 "new": newsymbol
             }
             ajax({
-                url: '/nonterminal/rename',
+                url: $SCRIPT_ROOT + '/nonterminal/rename',
                 type: "POST",
                 contentType: "application/json",
                 data: JSON.stringify(object),
@@ -236,7 +248,7 @@ YES, in all caps")
                 "nonterminal": this.state.current_nonterminal 
             }
             ajax({
-                url: '/nonterminal/delete',
+                url: $SCRIPT_ROOT + '/nonterminal/delete',
                 type: "POST",
                 contentType: "application/json",
                 data: JSON.stringify(object),
@@ -256,7 +268,7 @@ YES, in all caps")
             var object = {"markupSet": markupTag}
             console.log(object)
             ajax({
-                url: '/markup/addtagset',
+                url: $SCRIPT_ROOT + '/markup/addtagset',
                 type: "POST",
                 contentType: "application/json",
                 data: JSON.stringify(object),
@@ -279,11 +291,11 @@ YES, in all caps")
                 }
                 console.log(object)
                 ajax({
-                    url: '/markup/addtag',
+                    url: $SCRIPT_ROOT + '/markup/addtag',
                     type: "POST",
                     contentType: "application/json",
                     data: JSON.stringify(object),
-                    async: false,
+                    async: true,
                     cache: false
                 })
                 this.updateFromServer()
@@ -302,11 +314,11 @@ YES, in all caps")
             }
             console.log(object)
             ajax({
-                url: '/markup/renametag',
+                url: $SCRIPT_ROOT +'/markup/renametag',
                 type: "POST",
                 contentType: "application/json",
                 data: JSON.stringify(object),
-                async: false,
+                async: true,
                 cache: false
             })
             this.updateFromServer()
@@ -324,7 +336,7 @@ YES, in all caps")
                             }
                 console.log(object)
                 ajax({
-                    url: '/markup/renameset',
+                    url: $SCRIPT_ROOT + '/markup/renameset',
                     type: "POST",
                     contentType: "application/json",
                     data: JSON.stringify(object),
@@ -361,7 +373,7 @@ YES, in all caps")
             }
             console.log(object)
             ajax({
-                url: '/rule/add',
+                url: $SCRIPT_ROOT + '/rule/add',
                 type: "POST",
                 contentType: "application/json",
                 data: JSON.stringify(object),
@@ -403,7 +415,7 @@ YES, in all caps")
             var object = {"rule": index, "nonterminal": this.state.current_nonterminal, "app_rate": app_rate}
             console.log(object)
             ajax({
-                url: '/rule/set_app',
+                url: $SCRIPT_ROOT + '/rule/set_app',
                 type: "POST",
                 contentType: "application/json",
                 data: JSON.stringify(object),
@@ -418,7 +430,7 @@ YES, in all caps")
         var filename = window.prompt("Enter the Name of the Grammar you wish to load")
         if (filename != "") {
             ajax({
-                url: 'grammar/from_file',
+                url: $SCRIPT_ROOT + 'grammar/from_file',
                 type: "POST",
                 contentType: "text/plain",
                 data: filename,
@@ -436,7 +448,7 @@ YES, in all caps")
         var filename = window.prompt("Enter the Name of file you wish to Save Grammar to")
         if (filename != "") {
             ajax({
-                url: 'grammar/save',
+                url: $SCRIPT_ROOT + 'grammar/save',
                 type: "POST",
                 contentType: "text/plain",
                 data: filename,
@@ -460,21 +472,44 @@ YES, in all caps")
         }
     },
 
+    getexpansion: function(object) {
+        var symbol = object['symbol']
+        var index = object['index']
+
+        console.log(symbol)
+        console.log(index)
+        return {"symbol": symbol, "index": index, "expansion": this.state.nonterminals[symbol].rules[index].expansion.join("")}
+    },
 
     render: function () {
         var present_markups = []
         var def_rules = []
         var board
+        var referents
         if (this.state.current_nonterminal != "") {
+            var current = this.state.nonterminals[this.state.current_nonterminal]
             present_markups = this.state.nonterminals[this.state.current_nonterminal].markup
             def_rules = this.state.nonterminals[this.state.current_nonterminal].rules
             //check which board we need to render
-            board = <NonterminalBoard rename ={this.handleNonterminalRename}
-              expand={this.handleExpand} setDeep={this.handleSetDeep}
-              delete_nt ={this.handleNonterminalDelete}
-                                      name={this.state.current_nonterminal}
-                                      nonterminal={this.state.nonterminals[this.state.current_nonterminal]}/>
-            if (this.state.current_rule != -1) {
+            if (this.state.current_rule == -1) {
+                console.log(current)
+                var referents = []
+                if ("referents" in current)
+                {
+                    var referents = current["referents"]
+                    referents = referents.map(this.getexpansion)
+                    console.log(referents)
+                }
+
+                board = <NonterminalBoard rename={this.handleNonterminalRename}
+                                          expand={this.handleExpand} setDeep={this.handleSetDeep}
+                                          onRuleClickThrough={this.handleNonterminalRuleClickThrough}
+                                          referents={referents}
+                                          delete_nt={this.handleNonterminalDelete}
+                                          name={this.state.current_nonterminal}
+                                          nonterminal={this.state.nonterminals[this.state.current_nonterminal]}/>
+            }
+            else {
                 board = <RuleBoard name={this.state.current_nonterminal}
                                    onAppChange={this.handleAppModify}
                                    onRuleClickThrough={this.handleRuleClickThrough}

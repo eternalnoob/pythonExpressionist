@@ -31,7 +31,6 @@ def parse_rule(rule_string):
     split_list = re.split('(\[{2}[^\]\[]+\]{2}|\[{1}[^\[\]]+\]{1})', rule_string)
     # remove all empty strings
     split_list = filter(None, split_list)
-    print(split_list)
 
     derivation = []
     for token in split_list:
@@ -227,28 +226,52 @@ class PCFG(object):
                 else:
                     self.exhaustively_and_nonprobabilistically_export(nonterminal=nonterminal, filename=filename)
 
-    def to_json(self):
+    def to_json(self, to_file = None):
         # total represents our final dictionary we will conver to JSON
         total = {}
         # use defaultdict as it allows us to assume they are sets
         markups = collections.defaultdict(set)
         # nonterminals are their own dictionaries
-        nonterminals = {}
+        nonterminals = collections.defaultdict()
+
+        if to_file is None:
+            to_file = False
+        else:
+            to_file = True
+
         print(self.markup_class)
         for key, value in self.nonterminals.iteritems():
-            temp = {}
-            if len(value.rules) != 0:
-                value.complete = True
-            else:
-                value.complete = False
-            temp['deep'] = value.deep
-            temp['complete'] = value.complete
+            temp = collections.defaultdict()
+            if to_file is False:
+                if len(value.rules) != 0:
+                    value.complete = True
+                else:
+                    value.complete = False
+                temp['deep'] = value.deep
+                temp['complete'] = value.complete
+
             rules_list = []
+            i = 0
             for rules in value.rules:
 
                 # createJSON representation for individual rule markup
+                if to_file == False:
+                    for symbol in rules.derivation:
+                        if isinstance(symbol, NonterminalSymbol):
+                            if not nonterminals.get(symbol.tag):
+                                nonterminals[symbol.tag] = collections.defaultdict()
+                            if not nonterminals[symbol.tag].get('referents'):
+                                nonterminals[symbol.tag]['referents'] = []
+                            print(nonterminals[symbol.tag]['referents'])
 
-                rules_list.append({'expansion': rules.derivation_json(), 'app_rate': rules.application_rate,})
+                            ref_tag = {"symbol": str(value.tag), "index": i}
+                            if not ref_tag in nonterminals[symbol.tag]['referents']:
+
+                                nonterminals[symbol.tag]['referents'].append(ref_tag)
+
+                    rules_list.append({'expansion': rules.derivation_json(), 'app_rate': rules.application_rate,})
+
+                    i+=1
             temp['rules'] = rules_list
 
             markup_dict = collections.defaultdict(set)
@@ -257,7 +280,12 @@ class PCFG(object):
                 markups[markup.tagset.__str__()] |= {markup.tag}
 
             temp['markup'] = markup_dict
-            nonterminals[value.tag.__str__()] = temp
+            if not nonterminals.get(value.tag.__str__()):
+                nonterminals[value.tag.__str__()] = collections.defaultdict()
+
+            #print(nonterminals)
+            nonterminals[value.tag.__str__()].update(temp)
+            #print(nonterminals)
 
         total['nonterminals'] = nonterminals
 
@@ -289,8 +317,13 @@ class PCFG(object):
                 return list(obj)
             if isinstance(obj, SystemVar):
                 return str(obj)
-            raise TypeError
+            if isinstance(obj, NonterminalSymbol):
+                return str(obj)
+            else:
+                print(type(obj))
+                raise TypeError
 
+        print total
         return json.dumps(total, default=set_default, sort_keys=True)
         # create the nonterminal dictonary
 

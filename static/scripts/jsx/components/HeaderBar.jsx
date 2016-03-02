@@ -25,10 +25,8 @@ var HeaderBar = React.createClass({
             <div>
                 <ButtonToolbar>
                     <ButtonGroup>
-                        <Button onClick={this.props.importReps} bsStyle='primary'>Import</Button>
                         <Button onClick={this.props.loadGrammar} bsStyle='primary'>Load</Button>
                         <Button onClick={this.props.saveGrammar} bsStyle='primary'>Save</Button>
-                        <Button onClick={this.props.exportList} bsStyle='primary'>Export</Button>
                         <Button onClick={this.open} bsStyle='primary'>Show System Vars</Button>
                         <Button onClick={this.props.reset} bsStyle='danger'>Start Over</Button>
                     </ButtonGroup>
