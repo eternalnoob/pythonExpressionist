@@ -171,6 +171,8 @@ class PCFG(object):
 
         if not self.markup_class.get(str(markupSet)):
             self.markup_class[str(markupSet)] = set()
+            for tags in markupSet.markups:
+                self.add_unused_markup(tags)
 
     def monte_carlo_export(self, nonterminal, filename, samplesscalar=1, ):
         """
@@ -432,6 +434,10 @@ def from_json(json_in):
             gram_res.add_rule(temp_nonterm, expansion, application_rate)
 
     for markupSet in dict_rep.get('markups'):
+        x = MarkupSet(markupSet)
         gram_res.add_new_markup_set(MarkupSet(markupSet))
+        print(markupSet)
+        for tags in dict_rep['markups'][markupSet]:
+            gram_res.add_unused_markup(Markup(tags, tagset=x))
 
     return gram_res
