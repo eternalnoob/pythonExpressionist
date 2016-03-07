@@ -14,12 +14,9 @@ app = Flask(__name__)
 debug = True
 
 
-@app.route('/', methods=['GET', 'POST'])
-def index():
-    return render_template('index.html')
 
 
-@app.route('/default', methods=['GET'])
+@app.route('/api/default', methods=['GET'])
 def default():
     return flask_grammar.to_json()
 
@@ -30,7 +27,7 @@ we don't have nonlocal keywords. Make sure we modify our copy instead of make a 
 """
 
 
-@app.route('/grammar/load', methods=['POST'])
+@app.route('/api/grammar/load', methods=['POST'])
 def load_grammar():
     print request
     global flask_grammar
@@ -38,7 +35,7 @@ def load_grammar():
     return flask_grammar.to_json()
 
 
-@app.route('/grammar/from_file', methods=['POST'])
+@app.route('/api/grammar/from_file', methods=['POST'])
 def load_file_grammar():
     global flask_grammar
     grammar_name = request.data
@@ -49,23 +46,23 @@ def load_file_grammar():
     return flask_grammar.to_json()
 
 
-@app.route('/grammar/save', methods=['GET', 'POST'])
+@app.route('/api/grammar/save', methods=['GET', 'POST'])
 def save_grammar():
     grammar_name = request.data
     filename = os.path.abspath(os.path.join(os.path.dirname(__file__), ''.join(['grammars/load/', grammar_name])))
     outfile = open(filename, 'w+')
-    outfile.write(flask_grammar.to_json())
+    outfile.write(flask_grammar.to_json(to_file=True))
     return "saving new grammar"
 
 
-@app.route('/grammar/new', methods=['GET'])
+@app.route('/api/grammar/new', methods=['GET'])
 def new_grammar():
     global flask_grammar
     flask_grammar = PCFG.PCFG()
     return flask_grammar.to_json()
 
 
-@app.route('/grammar/export', methods=['GET', 'POST'])
+@app.route('/api/grammar/export', methods=['GET', 'POST'])
 def export_grammar():
     filename = ''.join(['grammars/exports/', request.data])
     print 'Exporting to {}...'.format(filename)
@@ -74,7 +71,7 @@ def export_grammar():
     return "exporting grammar database"
 
 
-@app.route('/nonterminal/add', methods=['POST'])
+@app.route('/api/nonterminal/add', methods=['POST'])
 def add_nt():
     data = request.get_json()
     # Strip off excess brackets
@@ -83,7 +80,7 @@ def add_nt():
     return flask_grammar.to_json()
 
 
-@app.route('/nonterminal/rename', methods=['POST'])
+@app.route('/api/nonterminal/rename', methods=['POST'])
 def rename_nt():
     data = request.get_json()
     old = re.search('[^\[\]]+', data['old']).group(0)
@@ -91,14 +88,14 @@ def rename_nt():
     flask_grammar.modify_tag(old, new) 
     return flask_grammar.to_json()
 
-@app.route('/nonterminal/delete', methods=['POST'])
+@app.route('/api/nonterminal/delete', methods=['POST'])
 def delete_nt():
     data = request.get_json()
     nonterminal = re.search('[^\[\]]+', data['nonterminal']).group(0)
     flask_grammar.delete_nonterminal(nonterminal)
     return flask_grammar.to_json()
 
-@app.route('/nonterminal/deep', methods=['POST'])
+@app.route('/api/nonterminal/deep', methods=['POST'])
 def set_deep():
     data = request.get_json()
     nonterminal = flask_grammar.nonterminals.get(data["nonterminal"])
@@ -111,18 +108,18 @@ def set_deep():
     return flask_grammar.to_json()
 
 
-@app.route('/nonterminal/expand', methods=['POST', 'GET'])
+@app.route('/api/nonterminal/expand', methods=['POST', 'GET'])
 def expand_nt():
     data = request.get_json()
     return flask_grammar.expand(NonterminalSymbol.NonterminalSymbol(data['nonterminal'])).to_json()
 
 
-@app.route('/rule/expand', methods=['POST', 'GET'])
+@app.route('/api/rule/expand', methods=['POST', 'GET'])
 def expand_rule():
     data = request.get_json()
     return flask_grammar.expand_rule(data['nonterminal'], int(data['index']) ).to_json()
 
-@app.route('/rule/swap', methods=['POST'])
+@app.route('/api/rule/swap', methods=['POST'])
 def swap_rule():
     data = request.get_json()
     index = int(data['index'])
@@ -131,7 +128,7 @@ def swap_rule():
     flask_grammar.copy_rule(original, index, new)
     return flask_grammar.to_json()
 
-@app.route('/rule/add', methods=['POST'])
+@app.route('/api/rule/add', methods=['POST'])
 def add_rule():
     data = request.get_json()
     rule = data['rule']
@@ -141,7 +138,7 @@ def add_rule():
     return flask_grammar.to_json()
 
 
-@app.route('/rule/delete', methods=['POST'])
+@app.route('/api/rule/delete', methods=['POST'])
 def del_rule():
     data = request.get_json()
     rule = int(data['rule'])
@@ -150,7 +147,7 @@ def del_rule():
     return flask_grammar.to_json()
 
 
-@app.route('/rule/set_app', methods=['POST'])
+@app.route('/api/rule/set_app', methods=['POST'])
 def set_app():
     data = request.get_json()
     rule = data['rule']
@@ -160,7 +157,7 @@ def set_app():
     return flask_grammar.to_json()
 
 
-@app.route('/markup/addtag', methods=['POST'])
+@app.route('/api/markup/addtag', methods=['POST'])
 def add_tag():
     data = request.get_json()
     markupSet = Markups.MarkupSet(data['markupSet'])
@@ -169,7 +166,7 @@ def add_tag():
     return flask_grammar.to_json()
 
 
-@app.route('/markup/addtagset', methods=['POST'])
+@app.route('/api/markup/addtagset', methods=['POST'])
 def add_tagset():
     data = request.get_json()
     markupSet = Markups.MarkupSet(data["markupSet"])
@@ -177,7 +174,7 @@ def add_tagset():
     return flask_grammar.to_json()
 
 
-@app.route('/markup/toggle', methods=['POST'])
+@app.route('/api/markup/toggle', methods=['POST'])
 def toggle_tag():
     data = request.get_json()
     print data
@@ -189,7 +186,7 @@ def toggle_tag():
 
     return flask_grammar.to_json()
 
-@app.route('/markup/renameset', methods=['POST'])
+@app.route('/api/markup/renameset', methods=['POST'])
 def rename_markupset():
     data = request.get_json()
     oldset = data['oldset']
@@ -197,7 +194,7 @@ def rename_markupset():
     flask_grammar.modify_markupset(oldset, newset)
     return flask_grammar.to_json()
 
-@app.route('/markup/renametag', methods=['POST'])
+@app.route('/api/markup/renametag', methods=['POST'])
 def rename_markuptag():
     data = request.get_json()
     markupset = data['markupset']
@@ -205,6 +202,11 @@ def rename_markuptag():
     newtag = data['newtag']
     flask_grammar.modify_markup(markupset, oldtag, newtag)
     return flask_grammar.to_json()
+
+@app.route('/', defaults={'path': ''})
+@app.route('/<path:path>')
+def index(path):
+    return render_template('index.html')
 
 
 

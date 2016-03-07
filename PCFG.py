@@ -242,32 +242,31 @@ class PCFG(object):
         #print(self.markup_class)
         for key, value in self.nonterminals.iteritems():
             temp = collections.defaultdict()
-            if to_file is False:
-                if len(value.rules) != 0:
-                    value.complete = True
-                else:
-                    value.complete = False
-                temp['deep'] = value.deep
-                temp['complete'] = value.complete
+            if len(value.rules) != 0:
+                value.complete = True
+            else:
+                value.complete = False
+            temp['deep'] = value.deep
+            temp['complete'] = value.complete
 
             rules_list = []
             i = 0
             for rules in value.rules:
 
                 # createJSON representation for individual rule markup
-                if to_file == False:
-                    for symbol in rules.derivation:
-                        if isinstance(symbol, NonterminalSymbol):
-                            if not nonterminals.get(symbol.tag):
-                                nonterminals[symbol.tag] = collections.defaultdict()
-                            if not nonterminals[symbol.tag].get('referents'):
-                                nonterminals[symbol.tag]['referents'] = []
-                            #print(nonterminals[symbol.tag]['referents'])
+                    if to_file == False:
+                        for symbol in rules.derivation:
+                            if isinstance(symbol, NonterminalSymbol):
+                                if not nonterminals.get(symbol.tag):
+                                    nonterminals[symbol.tag] = collections.defaultdict()
+                                if not nonterminals[symbol.tag].get('referents'):
+                                    nonterminals[symbol.tag]['referents'] = []
+                                #print(nonterminals[symbol.tag]['referents'])
 
-                            ref_tag = {"symbol": str(value.tag), "index": i}
-                            if not ref_tag in nonterminals[symbol.tag]['referents']:
+                                ref_tag = {"symbol": str(value.tag), "index": i}
+                                if not ref_tag in nonterminals[symbol.tag]['referents']:
 
-                                nonterminals[symbol.tag]['referents'].append(ref_tag)
+                                    nonterminals[symbol.tag]['referents'].append(ref_tag)
 
                     rules_list.append({'expansion': rules.derivation_json(), 'app_rate': rules.application_rate,})
 

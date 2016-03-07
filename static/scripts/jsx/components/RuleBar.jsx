@@ -27,7 +27,7 @@ var RuleBar = React.createClass({
         this.props.rules.forEach(function (rule, i) {
             //console.log(rules)
             var shortened = rule.expansion.join('').substring(0, 10);
-            rules.push(<Button onClick={this.props.onRuleClick.bind(null, rule.expansion)}
+            rules.push(<Button onClick={this.props.onRuleClick.bind(null, i)}
                                title={rule.expansion.join('')}
                                key={rule.expansion.join('') + this.props.name}>{shortened}</Button>);
         }, this)

@@ -59,7 +59,7 @@ var NonterminalBoard = React.createClass({
 
                 <div style={{"width": "60%", "float": "left"}}>
                     <Panel header="Present In" >
-                        <ListGroup style={{"max-height": "320", "overflow-y": "auto"}}>
+                        <ListGroup style={{"maxHeight": "320", "overflowY": "auto"}}>
                             {referents}
                         </ListGroup>
                     </Panel>

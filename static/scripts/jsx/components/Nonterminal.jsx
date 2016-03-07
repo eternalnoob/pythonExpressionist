@@ -3,6 +3,7 @@
 var React = require('react')
 var ListGroupItem = require('react-bootstrap').ListGroupItem
 var Glyphicon = require('react-bootstrap').Glyphicon
+var LinkContainer = require('react-router-bootstrap').LinkContainer
 
 var Nonterminal = React.createClass({
     propTypes: {
@@ -21,7 +22,7 @@ var Nonterminal = React.createClass({
 
         return (
             <ListGroupItem title={button_title} bsSize="xsmall" bsStyle={this.props.complete ? "success" : "danger" }
-                           onClick={this.props.onClick}>{deep_glyph} {this.props.name}</ListGroupItem>
+                       onClick={this.props.onClick}>{deep_glyph} {this.props.name}</ListGroupItem>
         );
     }
 
