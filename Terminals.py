@@ -22,7 +22,7 @@ class TerminalSymbol(object):
         """Return this terminal symbol."""
         if markup is None:
             markup = set()
-        return IntermediateDeriv(self.markup | markup, self.representation)
+        return IntermediateDeriv(self.markup | markup, str(self))
 
     def monte_carlo_expand(self, markup):
         """
