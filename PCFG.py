@@ -11,6 +11,7 @@ import re
 from NonterminalSymbol import NonterminalSymbol
 from Markups import Markup, MarkupSet
 from Terminals import TerminalSymbol, SystemVar
+from Rule import Rule
 import copy
 
 import jsontree
@@ -95,6 +96,23 @@ class PCFG(object):
                     new_derivation.append(token)
 
             nonterm_add.add_rule(new_derivation, application_rate)
+
+    def associate_derivation(self, derivation):
+        new_derivation = []
+        for token in derivation:
+            if isinstance(token, NonterminalSymbol):
+                if self.nonterminals.get(token.tag):
+                    new_derivation.append(self.nonterminals.get(token.tag))
+                else:
+                    self.add_nonterminal(token)
+                    new_derivation.append(token)
+            elif isinstance(token, SystemVar) and token not in self.system_vars:
+                self.system_vars.append(token)
+                new_derivation.append(token)
+            else:
+                new_derivation.append(token)
+        return new_derivation
+
 
     def remove_rule(self, nonterminal, derivation):
         """remove a rule from a nonterminal"""
@@ -400,8 +418,12 @@ class PCFG(object):
         self.nonterminals[new].add_rule_object(rule)
 
     # want to make this insert changed rule at old index, to preserve order
-    def modify_rule(self, nonterminal, index):
-        x=1
+    def modify_rule(self, nonterminal, index, new_expansion):
+        print(nonterminal)
+        print(index)
+        print(new_expansion)
+        app_rate = self.nonterminals.get(nonterminal).rules[index].application_rate
+        self.nonterminals[nonterminal].rules[index] = Rule(symbol=self.nonterminals[nonterminal], derivation=self.associate_derivation(parse_rule(new_expansion)), application_rate=app_rate)
 
 
     def expand_rule(self, nonterminal, index):

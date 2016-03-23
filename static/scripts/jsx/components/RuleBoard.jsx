@@ -50,6 +50,8 @@ var RuleBoard = React.createClass({
                     <h3>{this.props.name} -> {expansion_arr}</h3><Button bsStyle="danger" title="Delete Rule"
                                                                                 onClick={this.props.onDeleteRule}><Glyphicon
                     glyph="warning-sign"/>Delete</Button>
+                    <Button bsStyle="default"  title="Change Expansion" onClick={this.props.onRuleModify}>Change Expansion</Button>
+
                 </div>
 
                 <h2>{this.props.app_rate}<Button bsStyle="default" title="Modify Application Rate"

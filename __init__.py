@@ -147,6 +147,16 @@ def del_rule():
     return flask_grammar.to_json()
 
 
+@app.route('/api/rule/modify_expansion', methods=['POST'])
+def modify_rule_expansion():
+    data = request.get_json()
+    rule = int(data['rule'])
+    nonterminal = data['nonterminal']
+    new = str(data['expansion'])
+    flask_grammar.modify_rule(nonterminal, rule, new)
+    return flask_grammar.to_json()
+
+
 @app.route('/api/rule/set_app', methods=['POST'])
 def set_app():
     data = request.get_json()

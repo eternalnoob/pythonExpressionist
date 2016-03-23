@@ -15,7 +15,6 @@ import { Router, browserHistory } from 'react-router'
 
 var Interface = React.createClass({
 
-    mixins: [Router.Navigation],
 
     //load data from server, use default grammar
     getInitialState: function () {
@@ -103,11 +102,12 @@ var Interface = React.createClass({
 
     onBackButtonEvent: function(e){
         e.preventDefault();
-        console.log(e)
-        //this.goBack()
+
+        /*console.log(e)
+        this.goBack()
         console.log("wat")
         console.log(browserHistory)
-        console.log(this.props.params)
+        console.log(this.props.params)*/
         var nonterminal = this.props.params.nonterminalid
         var rule = this.props.params.ruleid
         if (!(this.state.current_nonterminal == nonterminal && this.state.current_rule == rule)){
@@ -122,11 +122,8 @@ var Interface = React.createClass({
     updateHistory: function(nonterminal, rule)
     {
 
-        console.log(nonterminal)
-        console.log(rule)
         if( nonterminal != '')
         {
-            console.log('mew0')
             browserHistory.push('/'+nonterminal+'/'+String(rule))
         }
         else
@@ -207,18 +204,21 @@ var Interface = React.createClass({
 
     resetGrammar: function () {
 
-        ajax({
-            url: $SCRIPT_ROOT + '/api/grammar/new',
-            type: 'GET',
-            async: false,
-            cache: false
-        });
-        this.state.current_nonterminal = ""
-        this.state.current_rule = -1
-        this.updateFromServer()
-        this.setState({markup_feedback: []})
-        this.setState({expansion_feedback: ""})
-        this.updateHistory("'", -1)
+        var resetalert = confirm('This will Reset your grammar!');
+        if (resetalert == true) {
+            ajax({
+                url: $SCRIPT_ROOT + '/api/grammar/new',
+                type: 'GET',
+                async: false,
+                cache: false
+            });
+            this.state.current_nonterminal = ""
+            this.state.current_rule = -1
+            this.updateFromServer()
+            this.setState({markup_feedback: []})
+            this.setState({expansion_feedback: ""})
+            this.updateHistory("'", -1)
+        }
     },
 
     handleExpand: function () {
@@ -462,6 +462,24 @@ YES, in all caps")
         this.updateHistory(this.state.current_nonterminal, -1)
     },
 
+    handleRuleModify: function () {
+        var index = this.state.current_rule
+        var new_expansion = window.prompt("Please enter new expansion")
+        if (new_expansion != "")
+        {
+            var object = {"nonterminal": this.state.current_nonterminal, "rule": index, "expansion": new_expansion}
+            ajax({
+                url: $SCRIPT_ROOT + '/api/rule/modify_expansion',
+                type: "POST",
+                contentType: "application/json",
+                data: JSON.stringify(object),
+                async: false,
+                cache: false
+            })
+            this.updateFromServer()
+        }
+    },
+
     handleAppModify: function () {
         var index = this.state.current_rule
         console.log("modifying application rate")
@@ -567,6 +585,7 @@ YES, in all caps")
             else {
                 board = <RuleBoard name={this.state.current_nonterminal}
                                    onAppChange={this.handleAppModify}
+                                   onRuleModify={this.handleRuleModify}
                                    onRuleClickThrough={this.handleRuleClickThrough}
                                    expansion={def_rules[this.state.current_rule].expansion}
                                    onRuleExpand={this.handleExpandRule}
