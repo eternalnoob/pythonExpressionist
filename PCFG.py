@@ -354,7 +354,24 @@ class PCFG(object):
     def modify_tag(self, old_tag, new_tag):
         JSON = jsontree.loads(self.to_json())
         #print(JSON)
-        JSON['nonterminals'][new_tag] = JSON['nonterminals'].pop(old_tag)
+        if JSON['nonterminals'].get(new_tag):
+            # this means a tag with the same name already exists
+            print("debug weoo")
+            x = JSON['nonterminals'].pop(old_tag)
+            for rule in x['rules']:
+                if rule not in JSON['nonterminals'][new_tag]['rules']:
+                    JSON['nonterminals'][new_tag]['rules'].append(rule)
+            for set in x['markup'].iterkeys():
+                if set not in JSON['nonterminals'][new_tag]['markup'].keys():
+                    JSON['nonterminals'][new_tag]['markup'][set] = x['markup'][set]
+                else:
+                    for markup in x['markup'][set]:
+                        if markup not in JSON['nonterminals'][new_tag]['markup'][set]:
+                            JSON['nonterminals'][new_tag]['markup'][set].append(markup)
+        else:
+            print("wasssuppp")
+            # otherwise we can just copy easily
+            JSON['nonterminals'][new_tag] = JSON['nonterminals'].pop(old_tag)
         #print(JSON)
         test_str = jsontree.dumps(JSON)
         test_str = test_str.replace("[[{0}]]".format(old_tag), "[[{0}]]".format(new_tag))
