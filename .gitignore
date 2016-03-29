@@ -10,3 +10,4 @@ grammars/load/*
 grammars/save/*
 grammars/exports/*
 __pycache__
+.env

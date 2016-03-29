@@ -1,6 +1,7 @@
 import os
 
-from flask import Flask, render_template, request
+from flask import Flask, render_template, request, session
+from werkzeug import secure_filename
 
 import Markups
 import NonterminalSymbol
@@ -11,6 +12,7 @@ import re
 import PCFG
 
 app = Flask(__name__)
+app.config['SQL_ALCHEMY_DATABASE_URI']
 debug = True
 
 
@@ -38,7 +40,7 @@ def load_grammar():
 @app.route('/api/grammar/from_file', methods=['POST'])
 def load_file_grammar():
     global flask_grammar
-    grammar_name = request.data
+    grammar_name = secure_filename(request.data)
     user_file = os.path.abspath(os.path.join(os.path.dirname(__file__), ''.join(['grammars/load/', grammar_name])))
     grammar_file = open(user_file, 'r')
     if grammar_file:
@@ -48,7 +50,7 @@ def load_file_grammar():
 
 @app.route('/api/grammar/save', methods=['GET', 'POST'])
 def save_grammar():
-    grammar_name = request.data
+    grammar_name = secure_filename(request.data)
     filename = os.path.abspath(os.path.join(os.path.dirname(__file__), ''.join(['grammars/load/', grammar_name])))
     outfile = open(filename, 'w+')
     outfile.write(flask_grammar.to_json(to_file=True))

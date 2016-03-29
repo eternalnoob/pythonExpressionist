@@ -28,7 +28,7 @@ var FeedbackBar = React.createClass({
                 </div>
 
                 <div id="Markup"
-                     style={{"border": "2px solid black", "height": "100%", "float": "left", "width": "40%", "overflow": "auto", "padding": "10px"}}>
+                     style={{"border": "2px solid black", "white-space": "pre", "height": "100%", "float": "left", "width": "40%", "overflow": "auto", "padding": "10px"}}>
                     {markups_str}
                 </div>
 
