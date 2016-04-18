@@ -31,6 +31,9 @@ we don't have nonlocal keywords. Make sure we modify our copy instead of make a 
 
 @app.route('/api/grammar/load', methods=['POST'])
 def load_grammar():
+    """
+    Load a grammar from a json representation sent as a request
+    """
     print request
     global flask_grammar
     flask_grammar = PCFG.from_json(str(request.data))
@@ -39,6 +42,9 @@ def load_grammar():
 
 @app.route('/api/grammar/from_file', methods=['POST'])
 def load_file_grammar():
+    """
+    Load a grammar from a file JSON representation
+    """
     global flask_grammar
     grammar_name = secure_filename(request.data)
     user_file = os.path.abspath(os.path.join(os.path.dirname(__file__), ''.join(['grammars/load/', grammar_name])))
@@ -50,6 +56,9 @@ def load_file_grammar():
 
 @app.route('/api/grammar/save', methods=['GET', 'POST'])
 def save_grammar():
+    """
+    Save a file as JSON representation within the grammars directory 
+    """
     grammar_name = secure_filename(request.data)
     filename = os.path.abspath(os.path.join(os.path.dirname(__file__), ''.join(['grammars/load/', grammar_name])))
     outfile = open(filename, 'w+')
@@ -59,6 +68,9 @@ def save_grammar():
 
 @app.route('/api/grammar/new', methods=['GET'])
 def new_grammar():
+    """
+    Delete current grammar and start over
+    """
     global flask_grammar
     flask_grammar = PCFG.PCFG()
     return flask_grammar.to_json()
@@ -66,6 +78,9 @@ def new_grammar():
 
 @app.route('/api/grammar/export', methods=['GET', 'POST'])
 def export_grammar():
+    """
+    TODO: REMOVE defunct function
+    """
     filename = ''.join(['grammars/exports/', request.data])
     print 'Exporting to {}...'.format(filename)
     flask_grammar.export_all(filename)
