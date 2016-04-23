@@ -3,9 +3,7 @@
 node_modules
 .*.sw*
 *.pyc
-static/scripts/build/bundle.js
 static/scripts/js/bootstrap
-static/scripts/css/
 grammars/load/*
 grammars/save/*
 grammars/exports/*
