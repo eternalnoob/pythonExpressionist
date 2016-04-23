@@ -19,6 +19,9 @@ app = Flask(__name__)
 app.config.from_object(os.environ['APP_SETTINGS'])
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 db = SQLAlchemy(app)
+global flask_grammar
+flask_grammar = PCFG.PCFG()
+#app.run()
 
 @app.route('/api/default', methods=['GET'])
 def default():
@@ -239,7 +242,3 @@ def index(path):
 
 
 
-if __name__ == '__main__':
-    global flask_grammar
-    flask_grammar = PCFG.PCFG()
-    app.run()
