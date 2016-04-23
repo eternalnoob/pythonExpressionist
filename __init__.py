@@ -241,5 +241,5 @@ def index(path):
 
 if __name__ == '__main__':
     global flask_grammar
-    flask_grammar = test
+    flask_grammar = PCFG.PCFG()
     app.run()
