@@ -2,6 +2,7 @@ import os
 
 from flask import Flask, render_template, request, session
 from werkzeug import secure_filename
+from flask.ext.sqlalchemy import SQLAlchemy
 
 import Markups
 import NonterminalSymbol
@@ -11,12 +12,13 @@ from test_gram import test
 import re
 import PCFG
 
+
+
+
 app = Flask(__name__)
-app.config['SQL_ALCHEMY_DATABASE_URI']
-debug = True
-
-
-
+app.config.from_object(os.environ['APP_SETTINGS'])
+app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
+db = SQLAlchemy(app)
 
 @app.route('/api/default', methods=['GET'])
 def default():
@@ -240,5 +242,4 @@ def index(path):
 if __name__ == '__main__':
     global flask_grammar
     flask_grammar = test
-    app.debug = debug
     app.run()
