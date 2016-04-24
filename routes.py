@@ -15,6 +15,7 @@ webapp = Blueprint('webapp', __name__)
 def return_grammar_obj(name):
     gram_json = Grammar.query.filter_by(name=name).first()
     if gram_json:
+        print type(gram_json.ret_obj())
         return gram_json.ret_obj()
     else:
         return None
@@ -24,6 +25,7 @@ def fetch_db_rep(name):
 
 def update_gram_db(name, grammar):
     fetch_db_rep(name).update(grammar)
+    print('555 number of the beast')
     db.session.commit()
 
 @webapp.route('/api/default', methods=['GET'])
@@ -36,10 +38,12 @@ def default():
             return x.to_json()
         else:
             print("grammar does not exists")
-            return new_grammar().to_json()
+            new_grammar()
+            return return_grammar_obj(session['grammarname']).to_json()
 
     else:
-        x = new_grammar()
+        print('newsessiongrammars now no name')
+        new_grammar()
         return x.to_json()
 
 
@@ -109,16 +113,16 @@ def new_grammar():
     Delete current grammar and start over
     """
     if 'grammarname' in session:
-        grammar = Grammar.query.filter_by(name=session['grammarname']).first()
+        grammar = fetch_db_rep(session['grammarname'])
         if grammar:
-            grammar.update(PCFG.PCFG())
+            x = PCFG.PCFG()
+            update_gram_db(session['grammarname'], x)
         else:
             gram = PCFG.PCFG()
             x = Grammar(gram, session['grammarname'])
             db.session.add(x)
             db.session.commit()
-            grammar = x
-        return grammar.ret_obj()
+        return return_grammar_obj(session['grammarname']).to_json()
     else:
         session['grammarname']='test'
         if not fetch_db_rep('test'):

@@ -24,3 +24,5 @@ class Grammar(db.Model):
 
     def rename(self, name):
         self.name = name
+        self.use_time = datetime.utcnow()
+
