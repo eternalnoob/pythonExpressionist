@@ -544,6 +544,21 @@ YES, in all caps")
             })
         }
     },
+    
+    loadNewName: function () {
+        var filename = window.prompt("Enter the name of grammar you wish to load")
+        if (filename != "") {
+            ajax({
+                url: $SCRIPT_ROOT + '/api/grammar/load_existing',
+                type: "POST",
+                contentType: "application/json",
+                data: JSON.stringify({'grammarname': filename}),
+                async: true,
+                cache: false
+            })
+        }
+    
+    },
 
     getexpansion: function(object) {
         var symbol = object['symbol']
@@ -598,9 +613,9 @@ YES, in all caps")
             <div style={{position: "fixed", top: 0, right: 0, "height": "100%", "width": "100%"}}>
                 <div
                     style={{ "height": "75%", "width": "75%", position: "absolute", top: 0, left: 0}}>
-                    <HeaderBar reset={this.resetGrammar} loadGrammar={this.renameGrammar}
+                    <HeaderBar reset={this.resetGrammar} loadGrammar={this.loadNewName}
                                exportList={this.exportList} saveGrammar={this.saveGrammar}
-                               systemVars={this.state.system_vars}/>
+                               systemVars={this.state.system_vars} renameGrammar={this.renameGrammar}/>
                     <div className="muwrap">
                         <div className="show-y-wrapper">
                             <MarkupBar className="markup-bar" onClickMarkup={this.handleMarkupClick}

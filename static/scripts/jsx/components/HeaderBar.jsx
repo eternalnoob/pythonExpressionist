@@ -6,6 +6,7 @@ var Button = require('react-bootstrap').Button
 var ButtonToolbar = require('react-bootstrap').ButtonToolbar
 var Modal = require('react-bootstrap').Modal
 
+/*<Button onClick={this.props.saveGrammar} bsStyle='primary'>Save</Button>*/
 var HeaderBar = React.createClass({
     getInitialState() {
         return {showModal: false};
@@ -25,8 +26,8 @@ var HeaderBar = React.createClass({
             <div>
                 <ButtonToolbar>
                     <ButtonGroup>
-                        <Button onClick={this.props.loadGrammar} bsStyle='primary'>Load</Button>
-                        <Button onClick={this.props.saveGrammar} bsStyle='primary'>Save</Button>
+                        <Button onClick={this.props.loadGrammar} bsStyle='primary'>Load Existing</Button>
+                        <Button onClick={this.props.renameGrammar} bsStyle='primary'>Rename Grammar</Button>
                         <Button onClick={this.open} bsStyle='primary'>Show System Vars</Button>
                         <Button onClick={this.props.reset} bsStyle='danger'>Start Over</Button>
                     </ButtonGroup>

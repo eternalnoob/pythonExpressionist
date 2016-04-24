@@ -36,7 +36,7 @@ def default():
             return x.to_json()
         else:
             print("grammar does not exists")
-            return new_grammar.to_json()
+            return new_grammar().to_json()
 
     else:
         x = new_grammar()
@@ -80,6 +80,14 @@ def rename_grammar():
     db.session.commit()
     session['grammarname'] = newname
     return 'renamed grammar'
+
+@webapp.route('/api/grammar/load_existing', methods=['POST'])
+def load_existing_grammar():
+    data = request.get_json()
+    grammar = data['grammarname']
+    if fetch_db_rep(grammar):
+        session['grammarname'] = grammar
+    return 'loaded new grammar'
 
 
 
