@@ -531,14 +531,14 @@ YES, in all caps")
         }
     },
 
-    exportList: function () {
-        var filename = window.prompt("Enter the Name of file you wish to export to")
+    renameGrammar: function () {
+        var filename = window.prompt("Enter the new name of this Grammar")
         if (filename != "") {
             ajax({
-                url: $SCRIPT_ROOT + '/api/grammar/export',
+                url: $SCRIPT_ROOT + '/api/grammar/rename',
                 type: "POST",
-                contentType: "text/plain",
-                data: filename,
+                contentType: "application/json",
+                data: JSON.stringify({'newname': filename}),
                 async: true,
                 cache: false
             })
@@ -598,7 +598,7 @@ YES, in all caps")
             <div style={{position: "fixed", top: 0, right: 0, "height": "100%", "width": "100%"}}>
                 <div
                     style={{ "height": "75%", "width": "75%", position: "absolute", top: 0, left: 0}}>
-                    <HeaderBar reset={this.resetGrammar} loadGrammar={this.loadGrammar}
+                    <HeaderBar reset={this.resetGrammar} loadGrammar={this.renameGrammar}
                                exportList={this.exportList} saveGrammar={this.saveGrammar}
                                systemVars={this.state.system_vars}/>
                     <div className="muwrap">
