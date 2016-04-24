@@ -130,7 +130,7 @@ def new_grammar():
             print("wowee")
             return x.ret_obj()
         else:
-            return return_grammar_obj()
+            return return_grammar_obj('test')
 
 
 @webapp.route('/api/grammar/export', methods=['GET', 'POST'])
