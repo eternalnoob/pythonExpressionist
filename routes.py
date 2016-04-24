@@ -120,14 +120,17 @@ def new_grammar():
             grammar = x
         return grammar.ret_obj()
     else:
-        gram = PCFG.PCFG()
-        x = Grammar(gram, 'test')
         session['grammarname']='test'
-        print("wowee")
-        db.session.add(x)
-        db.session.commit()
-        print("wowee")
-        return x.ret_obj()
+        if not fetch_db_rep('test'):
+            gram = PCFG.PCFG()
+            x = Grammar(gram, 'test')
+            print("wowee")
+            db.session.add(x)
+            db.session.commit()
+            print("wowee")
+            return x.ret_obj()
+        else:
+            return return_grammar_obj()
 
 
 @webapp.route('/api/grammar/export', methods=['GET', 'POST'])
