@@ -44,8 +44,7 @@ def default():
     else:
         print('newsessiongrammars now no name')
         new_grammar()
-        return x.to_json()
-
+        return return_grammar_obj('test').to_json()
 
 
 
