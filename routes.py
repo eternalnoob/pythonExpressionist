@@ -124,7 +124,7 @@ def upload_grammar():
         db.session.add(y)
         db.session.commit()
 
-    return 1
+    return 'Success'
 
 
 
