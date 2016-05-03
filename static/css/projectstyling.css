@@ -8,3 +8,10 @@
     overflow-y: visible;
 }
 
+.inputclass{
+    visibility: hidden;
+    display: none;
+    width: 0;
+    height: 0;
+}
+

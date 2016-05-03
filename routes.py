@@ -1,7 +1,13 @@
 import os
 import re
 
-from flask import session, request, render_template, Blueprint
+from flask import session, request, render_template, Blueprint, stream_with_context
+from werkzeug.datastructures import Headers
+from werkzeug.wrappers import Response
+from werkzeug import secure_filename
+import IPython
+
+
 
 import Markups
 import NonterminalSymbol
@@ -20,13 +26,21 @@ def return_grammar_obj(name):
     else:
         return None
 
+
 def fetch_db_rep(name):
     return Grammar.query.filter_by(name=name).first()
+
 
 def update_gram_db(name, grammar):
     fetch_db_rep(name).update(grammar)
     print('555 number of the beast')
     db.session.commit()
+
+
+def allowed_file(filename):
+    return '.' in filename and \
+        filename.rsplit('.', 1)[1] == 'json'
+
 
 @webapp.route('/api/default', methods=['GET'])
 def default():
@@ -45,7 +59,6 @@ def default():
         print('newsessiongrammars now no name')
         new_grammar()
         return return_grammar_obj('test').to_json()
-
 
 
 @webapp.route('/api/grammar/load', methods=['POST'])
@@ -84,6 +97,7 @@ def rename_grammar():
     session['grammarname'] = newname
     return 'renamed grammar'
 
+
 @webapp.route('/api/grammar/load_existing', methods=['POST'])
 def load_existing_grammar():
     data = request.get_json()
@@ -93,17 +107,42 @@ def load_existing_grammar():
     return 'loaded new grammar'
 
 
+@webapp.route('/api/grammar/upload_grammar', methods=['POST'])
+def upload_grammar():
+
+    file = request.files['file']
+
+    if file and allowed_file(file.filename):
+        filename=secure_filename(file.filename)
+        session['grammarname']=os.path.splitext(filename)[0]
+
+    x = PCFG.from_json(file.read())
+    if fetch_db_rep(session['grammarname']):
+        update_gram_db(session['grammarname'], PCFG.from_json(str(x)))
+    else:
+        y = Grammar(x, session['grammarname'])
+        db.session.add(y)
+        db.session.commit()
+
+    return 1
+
+
 
 @webapp.route('/api/grammar/save', methods=['GET', 'POST'])
 def save_grammar():
     """
     Save a file as JSON representation within the grammars directory
     """
-    grammar_name = secure_filename(request.data)
-    filename = os.path.abspath(os.path.join(os.path.dirname(__file__), ''.join(['grammars/load/', grammar_name])))
-    outfile = open(filename, 'w+')
-    outfile.write(flask_grammar.to_json(to_file=True))
-    return "saving new grammar"
+    if 'grammarname' in session:
+        grammar = fetch_db_rep(session['grammarname']).grammar
+
+    headers = Headers()
+    headers.set('Content-Disposition', 'attachment', filename=session['grammarname']+'.json')
+
+    return Response(
+        stream_with_context(str(grammar)),
+        mimetype='application/json', headers=headers)
+
 
 
 @webapp.route('/api/grammar/new', methods=['GET'])

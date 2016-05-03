@@ -517,18 +517,7 @@ YES, in all caps")
     },
 
     saveGrammar: function () {
-
-        var filename = window.prompt("Enter the Name of file you wish to Save Grammar to")
-        if (filename != "") {
-            ajax({
-                url: $SCRIPT_ROOT + '/api/grammar/save',
-                type: "POST",
-                contentType: "text/plain",
-                data: filename,
-                async: true,
-                cache: false
-            })
-        }
+        window.open($SCRIPT_ROOT+'/api/grammar/save', '_self');
     },
 
     renameGrammar: function () {
