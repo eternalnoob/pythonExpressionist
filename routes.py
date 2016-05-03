@@ -116,9 +116,11 @@ def upload_grammar():
         filename=secure_filename(file.filename)
         session['grammarname']=os.path.splitext(filename)[0]
 
-    x = PCFG.from_json(file.read())
+    x=file.read()
+    print(x)
+    x = PCFG.from_json(x)
     if fetch_db_rep(session['grammarname']):
-        update_gram_db(session['grammarname'], PCFG.from_json(str(x)))
+        update_gram_db(session['grammarname'], x)
     else:
         y = Grammar(x, session['grammarname'])
         db.session.add(y)
